@@ -1,0 +1,79 @@
+{
+  "mode": "official",
+  "platform": "linux",
+  "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
+  "fixture": "/workspace/harness-pi-tools/fixture",
+  "measuredAt": "2026-10-30T21:06:18.838Z",
+  "rows": [
+    {
+      "tool": "read",
+      "cpuEvents": -1,
+      "softCpuUs": 1199,
+      "wallMs": 1.064,
+      "peakRssKb": 56640,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "bash",
+      "cpuEvents": -1,
+      "softCpuUs": 3040,
+      "wallMs": 2.947,
+      "peakRssKb": 61280,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "edit",
+      "cpuEvents": -1,
+      "softCpuUs": 374,
+      "wallMs": 0.516,
+      "peakRssKb": 61020,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "write",
+      "cpuEvents": -1,
+      "softCpuUs": 134,
+      "wallMs": 0.237,
+      "peakRssKb": 61036,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "grep",
+      "cpuEvents": -1,
+      "softCpuUs": 1158,
+      "wallMs": 3.554,
+      "peakRssKb": 61092,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "find",
+      "cpuEvents": -1,
+      "softCpuUs": 1070,
+      "wallMs": 5.47,
+      "peakRssKb": 61196,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    },
+    {
+      "tool": "ls",
+      "cpuEvents": -1,
+      "softCpuUs": 3221,
+      "wallMs": 2.304,
+      "peakRssKb": 65060,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=5",
+      "notes": "cpuEvents=-1: linux-perf/HW counters not available on box; softCpuUs=process.cpuUsage user+system µs median-round avg"
+    }
+  ]
+}

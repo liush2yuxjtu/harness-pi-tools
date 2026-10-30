@@ -1,0 +1,9 @@
+[
+  {"tool":"read","hotspots":["utf-8 decode + split('\\n') full file before truncate","Buffer.byteLength per line in truncate loop"],"hypotheses":["walk bytes once for truncate without materializing all string lines","mmap/readFileSync for large files"],"expectedWin":"measurable on large truncate-bound files; small files may regress"},
+  {"tool":"bash","hotspots":["process spawn","truncateTail string ops on large stdout"],"hypotheses":["stream truncate while reading pipes"],"expectedWin":"large stdout only"},
+  {"tool":"edit","hotspots":["full-file string indexOf loops"],"hypotheses":["single-pass replace"],"expectedWin":"small — already O(n)"},
+  {"tool":"write","hotspots":["mkdir recursive + write"],"hypotheses":["little headroom"],"expectedWin":"noise-level"},
+  {"tool":"grep","hotspots":["rg spawn+JSON parse in official; harness uses plain text","result order nondeterministic without --sort"],"hypotheses":["keep rg; stabilize sort for A/B; avoid double JSON"],"expectedWin":"parity stability > speed"},
+  {"tool":"find","hotspots":["fd spawn"],"hypotheses":["bundle fd; same CLI"],"expectedWin":"availability, not algorithm"},
+  {"tool":"ls","hotspots":["per-entry stat after readdir"],"hypotheses":["readdir({withFileTypes:true}) avoid N stats"],"expectedWin":"large directories — primary win target"}
+]

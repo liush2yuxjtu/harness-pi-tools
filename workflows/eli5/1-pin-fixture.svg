@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420">
+  <rect width="720" height="420" fill="#FFF8E7"/>
+  <text x="36" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#222">1 · 胶带钉住 + 同一套卷子</text>
+  <!-- tape pin -->
+  <rect x="48" y="100" width="260" height="240" rx="20" fill="#B8E0FF" stroke="#2B6CB0" stroke-width="4"/>
+  <text x="178" y="145" text-anchor="middle" font-size="22" font-weight="700" fill="#1A365D">官方玩具</text>
+  <rect x="90" y="170" width="176" height="100" rx="12" fill="#EBF8FF" stroke="#2B6CB0" stroke-width="3"/>
+  <text x="178" y="210" text-anchor="middle" font-size="18" fill="#2C5282">Pi tools</text>
+  <text x="178" y="240" text-anchor="middle" font-size="16" fill="#2C5282">86dc686</text>
+  <!-- tape strips -->
+  <rect x="70" y="120" width="90" height="22" rx="4" fill="#F6E05E" transform="rotate(-18 70 120)"/>
+  <rect x="200" y="115" width="90" height="22" rx="4" fill="#F6E05E" transform="rotate(14 200 115)"/>
+  <text x="178" y="310" text-anchor="middle" font-size="16" fill="#2B6CB0">pin = 胶带粘住，不许换</text>
+  <!-- arrow -->
+  <path d="M330 220 L390 220" stroke="#444" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="400,220 375,205 375,235" fill="#444"/>
+  <!-- exam paper fixture -->
+  <rect x="420" y="100" width="250" height="240" rx="20" fill="#C6F6D5" stroke="#276749" stroke-width="4"/>
+  <text x="545" y="145" text-anchor="middle" font-size="22" font-weight="700" fill="#22543D">考试卷</text>
+  <rect x="455" y="170" width="180" height="18" rx="4" fill="#9AE6B4"/>
+  <rect x="455" y="205" width="150" height="18" rx="4" fill="#9AE6B4"/>
+  <rect x="455" y="240" width="170" height="18" rx="4" fill="#9AE6B4"/>
+  <text x="545" y="300" text-anchor="middle" font-size="16" fill="#276749">fixture = 每次同一套</text>
+</svg>

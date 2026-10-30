@@ -1,0 +1,14 @@
+{
+  "pinOk": true,
+  "head": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
+  "tools": [
+    {"name": "read", "path": "packages/coding-agent/src/core/tools/read.ts", "defaultOn": true, "backend": "pure-ts", "notes": "fs readFile + truncateHead"},
+    {"name": "bash", "path": "packages/coding-agent/src/core/tools/bash.ts", "defaultOn": true, "backend": "child-process", "notes": "bash -c; truncateTail"},
+    {"name": "edit", "path": "packages/coding-agent/src/core/tools/edit.ts", "defaultOn": true, "backend": "pure-ts", "notes": "unique oldText replace"},
+    {"name": "write", "path": "packages/coding-agent/src/core/tools/write.ts", "defaultOn": true, "backend": "pure-ts", "notes": "mkdir + writeFile"},
+    {"name": "grep", "path": "packages/coding-agent/src/core/tools/grep.ts", "defaultOn": true, "backend": "rg", "notes": "ripgrep --json; DEFAULT_LIMIT=100; GREP_MAX_LINE_LENGTH=500"},
+    {"name": "find", "path": "packages/coding-agent/src/core/tools/find.ts", "defaultOn": true, "backend": "fd", "notes": "fd glob; DEFAULT_LIMIT=1000"},
+    {"name": "ls", "path": "packages/coding-agent/src/core/tools/ls.ts", "defaultOn": true, "backend": "pure-ts", "notes": "readdir+stat per entry; DEFAULT_LS_LIMIT=500"}
+  ],
+  "truncateNotes": "Shared truncate.ts: DEFAULT_MAX_LINES=2000, DEFAULT_MAX_BYTES=50KiB; head for read/ls/grep/find; tail for bash; never partial lines except bash tail edge; firstLineExceedsLimit for head."
+}

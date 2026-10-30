@@ -1,0 +1,11 @@
+{
+  "whyLines": "Context-window budget for agent tool results: unbounded file/dir dumps blow prompt tokens and latency. 2000 lines is a practical soft ceiling so the model still sees useful head content without flooding the turn.",
+  "whyBytes": "50KB caps pathological long-line files (minified/binary-as-text) that would hit few lines but huge tokens. Independent of line limit — whichever fires first wins.",
+  "removalOptions": [
+    {"id": "env-config", "summary": "Expose PI_TOOL_MAX_LINES / PI_TOOL_MAX_BYTES (or harness flag) defaulting to official 2000/50KB", "risk": "low — schema unchanged; callers opt in"},
+    {"id": "per-call", "summary": "Optional maxLines/maxBytes on tool params; omit = official defaults", "risk": "medium — schema shape grows; must stay optional for A/B embed"},
+    {"id": "remove-hardcap", "summary": "Delete hard caps entirely", "risk": "high — silently changes semantics; agent OOM/context blowup"},
+    {"id": "stream-page", "summary": "Keep caps but add continuation tokens (already partly in read notices)", "risk": "low — behavioral extension, not silent change"}
+  ],
+  "recommended": "env-config"
+}

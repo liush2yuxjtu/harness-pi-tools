@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420">
+  <rect width="720" height="420" fill="#FFF8E7"/>
+  <text x="36" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#222">4 · 妈妈清单勾完，才准写成绩</text>
+  <!-- checklist mom -->
+  <rect x="48" y="90" width="300" height="260" rx="20" fill="#FED7E2" stroke="#B83280" stroke-width="4"/>
+  <text x="198" y="135" text-anchor="middle" font-size="22" font-weight="700" fill="#702459">出门检查</text>
+  <rect x="80" y="165" width="28" height="28" rx="6" fill="#48BB78"/>
+  <text x="94" y="186" text-anchor="middle" font-size="18" fill="#fff">✓</text>
+  <text x="125" y="186" font-size="18" fill="#702459">对等测试</text>
+  <rect x="80" y="215" width="28" height="28" rx="6" fill="#48BB78"/>
+  <text x="94" y="236" text-anchor="middle" font-size="18" fill="#fff">✓</text>
+  <text x="125" y="236" font-size="18" fill="#702459">Linux + macOS</text>
+  <rect x="80" y="265" width="28" height="28" rx="6" fill="#48BB78"/>
+  <text x="94" y="286" text-anchor="middle" font-size="18" fill="#fff">✓</text>
+  <text x="125" y="286" font-size="18" fill="#702459">/verify 全绿</text>
+  <text x="198" y="330" text-anchor="middle" font-size="16" fill="#B83280">verify = 没勾完不许出门</text>
+  <!-- report card -->
+  <rect x="400" y="90" width="270" height="260" rx="20" fill="#EBF8FF" stroke="#2B6CB0" stroke-width="4"/>
+  <text x="535" y="140" text-anchor="middle" font-size="22" font-weight="700" fill="#1A365D">成绩单</text>
+  <text x="535" y="190" text-anchor="middle" font-size="18" fill="#2C5282">只写真量过的数</text>
+  <rect x="450" y="220" width="170" height="50" rx="10" fill="#BEE3F8"/>
+  <text x="535" y="252" text-anchor="middle" font-size="18" font-weight="700" fill="#2B6CB0">实测 ✓</text>
+  <text x="535" y="310" text-anchor="middle" font-size="16" fill="#C53030">禁止吹牛 / 估算</text>
+</svg>

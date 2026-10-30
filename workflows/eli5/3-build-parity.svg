@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420">
+  <rect width="720" height="420" fill="#FFF8E7"/>
+  <text x="36" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#222">3 · 做新鞋 + 书包要一样满</text>
+  <!-- build -->
+  <rect x="50" y="100" width="280" height="240" rx="20" fill="#E9D8FD" stroke="#6B46C1" stroke-width="4"/>
+  <text x="190" y="145" text-anchor="middle" font-size="22" font-weight="700" fill="#553C9A">加速路径</text>
+  <rect x="90" y="170" width="80" height="80" rx="12" fill="#B794F4"/>
+  <text x="130" y="218" text-anchor="middle" font-size="16" fill="#fff">read</text>
+  <rect x="190" y="170" width="80" height="80" rx="12" fill="#9F7AEA"/>
+  <text x="230" y="218" text-anchor="middle" font-size="16" fill="#fff">bash</text>
+  <rect x="90" y="265" width="80" height="50" rx="10" fill="#805AD5"/>
+  <text x="130" y="297" text-anchor="middle" font-size="15" fill="#fff">grep…</text>
+  <rect x="190" y="265" width="80" height="50" rx="10" fill="#6B46C1"/>
+  <text x="230" y="297" text-anchor="middle" font-size="15" fill="#fff">find</text>
+  <text x="190" y="360" text-anchor="middle" font-size="15" fill="#553C9A">Rust 可选 · 禁 unsafe</text>
+  <!-- parity backpacks -->
+  <path d="M400 160 L430 120 L520 120 L550 160 L550 300 L400 300 Z" fill="#90CDF4" stroke="#2B6CB0" stroke-width="4"/>
+  <text x="475" y="230" text-anchor="middle" font-size="18" font-weight="700" fill="#1A365D">官方</text>
+  <text x="475" y="258" text-anchor="middle" font-size="16" fill="#2C5282">7 件工具</text>
+  <path d="M560 160 L590 120 L680 120 L710 160 L710 300 L560 300 Z" fill="#9AE6B4" stroke="#276749" stroke-width="4"/>
+  <text x="635" y="230" text-anchor="middle" font-size="18" font-weight="700" fill="#22543D">加速</text>
+  <text x="635" y="258" text-anchor="middle" font-size="16" fill="#276749">也要 7 件</text>
+  <text x="555" y="340" text-anchor="middle" font-size="16" fill="#444">parity = 新旧书包一样满</text>
+</svg>

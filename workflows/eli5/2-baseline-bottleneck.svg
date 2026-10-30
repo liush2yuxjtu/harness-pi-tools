@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420">
+  <rect width="720" height="420" fill="#FFF8E7"/>
+  <text x="36" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#222">2 · 先量旧鞋，再找堵车点</text>
+  <!-- old shoe -->
+  <ellipse cx="160" cy="250" rx="110" ry="55" fill="#ED8936" stroke="#9C4221" stroke-width="4"/>
+  <path d="M80 230 Q120 160 200 170 Q240 175 250 230" fill="#F6AD55" stroke="#9C4221" stroke-width="4"/>
+  <text x="160" y="265" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">旧鞋</text>
+  <text x="160" y="340" text-anchor="middle" font-size="16" fill="#9C4221">baseline = 先量多慢</text>
+  <!-- heart / cpu -->
+  <circle cx="360" cy="200" r="70" fill="#FC8181" stroke="#C53030" stroke-width="4"/>
+  <text x="360" y="195" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">心跳</text>
+  <text x="360" y="225" text-anchor="middle" font-size="16" fill="#fff">CPU 事件</text>
+  <text x="360" y="300" text-anchor="middle" font-size="15" fill="#C53030">比墙上的钟更公平</text>
+  <!-- traffic jam -->
+  <rect x="470" y="120" width="200" height="200" rx="20" fill="#FEEBC8" stroke="#C05621" stroke-width="4"/>
+  <rect x="500" y="160" width="60" height="36" rx="6" fill="#E53E3E"/>
+  <rect x="580" y="160" width="60" height="36" rx="6" fill="#DD6B20"/>
+  <rect x="500" y="220" width="60" height="36" rx="6" fill="#D69E2E"/>
+  <rect x="580" y="220" width="60" height="36" rx="6" fill="#E53E3E"/>
+  <text x="570" y="290" text-anchor="middle" font-size="16" fill="#7B341E">bottleneck</text>
+  <text x="570" y="312" text-anchor="middle" font-size="15" fill="#7B341E">哪段最堵？</text>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "platform": "macos",
+  "status": "SKIP",
+  "reason": "No macOS machine available. Connected user machines: fatfishking=Windows, Xiaomi=android offline, 192.168.1.115 offline. Documented per workflow platforms rule.",
+  "measuredAt": "2026-10-30T21:06:46.010Z",
+  "rows": []
+}

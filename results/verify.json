@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "items": [
+    {
+      "name": "pin",
+      "status": "PASS",
+      "detail": "HEAD=86dc686cf2fd795b2b24af3d614bb0e1307bcd76"
+    },
+    {
+      "name": "parity",
+      "status": "PASS",
+      "detail": "parity.json passed"
+    },
+    {
+      "name": "artifact:baseline-official.json",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "artifact:baseline-fast.json",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "artifact:bench-linux.json",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "macos-bench",
+      "status": "SKIP",
+      "detail": "No macOS machine available. Connected user machines: fatfishking=Windows, Xiaomi=android offline, 192.168.1.115 offline. Documented per workflow platforms rule."
+    },
+    {
+      "name": "docs/ADR-0001-tech-choice.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "docs/ADAPTER.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "docs/AUDIT-truncation.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
+      "name": "forbid-unsafe",
+      "status": "PASS",
+      "detail": "no unsafe keyword under native/packages"
+    },
+    {
+      "name": "fd-available",
+      "status": "PASS",
+      "detail": "fd 10.2.0"
+    }
+  ],
+  "at": "2026-10-30T21:07:39.678Z"
+}
