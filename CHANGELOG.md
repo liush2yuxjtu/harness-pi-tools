@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-10-31 (Asia/Taipei)
+
+- **Deterministic lab metric:** probe chain perf-instructions → Valgrind cachegrind `Ir` (`--trace-children`, sum summaries, `node --predictable`) → page-faults → soft-cpu-proxy.
+- This box selects **`valgrind-ir`** (no cpu PMU; distro `perf` may be broken). `cpuEvents` / `officialCpu`·`fastCpu` filled with Ir; `wallMs` display-only.
+- Harness: `harness/lib/deterministic.mjs`, `harness/ir-worker.mjs`, `bin/pe_count`; measure + bench-ab + merge updated; verify **count-ratchet** (suite ×1.05 + per-tool ×1.15).
+- Fast truncate: tiny under-limit payloads use split (grep/find Ir parity); large keep `countLinesNoAlloc`.
+- Docs: `docs/METRICS.md`, README measured Ir tables, verify skill.
+
 ## 0.2.0 — 2026-10-31 (Asia/Taipei)
 
 - **/goal harness-v0.2:** fix `read` small-file regression (`fast <= official×1.05` on `read:small`); large reads not significantly worse.

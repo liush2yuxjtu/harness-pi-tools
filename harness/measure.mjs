@@ -3,12 +3,12 @@ import { dirname, join } from "path";
 import { fileURLToPath as __fu } from "url";
 process.env.PATH = join(dirname(__fu(import.meta.url)), "..", "bin") + ":" + (process.env.PATH || "");
 /**
- * Baseline / A/B measurement runner.
- * Primary: HW counters via `perf` when available → cpuEvents.
- * Fallback: cpuEvents=-1 + softCpuUs from process.cpuUsage (µs).
+ * Baseline measurement runner.
+ * Lab primary: deterministic event count (perf instructions → Valgrind Ir → other → softCpu proxy).
+ * wallMs: secondary / public display — not the lab gate.
  *
  * Usage:
- *   node harness/measure.mjs official|fast [out.json] [--suite small|large|all]
+ *   node harness/measure.mjs official|fast [out.json] [--suite small|large|all] [--ir-rounds N]
  */
 import { performance } from "perf_hooks";
 import { writeFile, mkdir, copyFile, access } from "fs/promises";
@@ -16,92 +16,43 @@ import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import os from "os";
+import { readFileSync } from "fs";
+import {
+  probeDeterministicMetric,
+  measureValgrindIr,
+  measureSoftCpuProxy,
+} from "./lib/deterministic.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HARNESS_ROOT = path.resolve(__dirname, "..");
 const FIXTURE = path.join(HARNESS_ROOT, "fixture");
 const RESULTS = path.join(HARNESS_ROOT, "results");
+const IR_WORKER = path.join(HARNESS_ROOT, "harness", "ir-worker.mjs");
 
 const argv = process.argv.slice(2);
 const mode = argv.find((a) => a === "official" || a === "fast") || "official";
-const suiteArgIdx = argv.indexOf("--suite");
-const suite = suiteArgIdx >= 0 ? argv[suiteArgIdx + 1] || "small" : "small";
+function flag(name, def) {
+  const i = argv.indexOf(`--${name}`);
+  return i >= 0 ? argv[i + 1] : def;
+}
+const suite = flag("suite", "small");
+const irRounds = Number(flag("ir-rounds", process.env.HARNESS_IR_ROUNDS || "25"));
+const wallRounds = Number(flag("rounds", "15"));
 const outName =
-  argv.find((a, i) => a !== "official" && a !== "fast" && a !== "--suite" && argv[i - 1] !== "--suite") ||
-  `baseline-${mode}.json`;
+  argv.find(
+    (a, i) =>
+      a !== "official" &&
+      a !== "fast" &&
+      !a.startsWith("--") &&
+      argv[i - 1] !== "--suite" &&
+      argv[i - 1] !== "--ir-rounds" &&
+      argv[i - 1] !== "--rounds",
+  ) || `baseline-${mode}.json`;
 
 const toolsMod =
   mode === "fast"
     ? await import("../packages/fast-tools/src/tools.mjs")
     : await import("../packages/official-shim/src/tools.mjs");
-
-import { readFileSync, readdirSync } from "fs";
-function probeHwCountersEsm() {
-  const probes = [];
-  const which = spawnSync("sh", ["-c", "command -v perf"], { encoding: "utf8" });
-  const perfPath = (which.stdout || "").trim();
-  probes.push({
-    cmd: "command -v perf",
-    ok: Boolean(perfPath),
-    detail: perfPath || "perf not on PATH",
-  });
-  let paranoid = null;
-  try {
-    paranoid = readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8").trim();
-    probes.push({ cmd: "cat /proc/sys/kernel/perf_event_paranoid", ok: true, detail: paranoid });
-  } catch (e) {
-    probes.push({ cmd: "cat /proc/sys/kernel/perf_event_paranoid", ok: false, detail: String(e.message || e) });
-  }
-  let sample = null;
-  if (perfPath) {
-    const r = spawnSync(perfPath, ["stat", "-e", "instructions:u", "-x", ",", "--", "true"], {
-      encoding: "utf8",
-      timeout: 5000,
-    });
-    const combined = `${r.stdout || ""}\n${r.stderr || ""}`;
-    probes.push({
-      cmd: "perf stat -e instructions:u -x, -- true",
-      ok: r.status === 0,
-      detail: combined.trim().slice(0, 300),
-    });
-    if (r.status === 0) {
-      const line = (r.stderr || r.stdout || "").split("\n").find((l) => /instructions/.test(l));
-      if (line) {
-        const val = Number(String(line.split(",")[0]).replace(/,/g, ""));
-        if (Number.isFinite(val)) sample = val;
-      }
-    }
-  } else {
-    probes.push({
-      cmd: "perf stat -e instructions:u -x, -- true",
-      ok: false,
-      detail: "skipped (no perf binary)",
-    });
-  }
-  try {
-    const devs = readdirSync("/sys/bus/event_source/devices");
-    const hasCpu = devs.some((d) => d === "cpu" || d.startsWith("cpu"));
-    probes.push({
-      cmd: "ls /sys/bus/event_source/devices",
-      ok: true,
-      detail: `${devs.join(",")} (cpuPmu=${hasCpu})`,
-    });
-  } catch (e) {
-    probes.push({ cmd: "ls /sys/bus/event_source/devices", ok: false, detail: String(e.message || e) });
-  }
-  const available = sample != null;
-  return {
-    available,
-    sampleInstructions: sample,
-    probes,
-    notes: available
-      ? "HW counters available via perf; per-op sampling not wired (use softCpuUs); set cpuEvents when per-op path lands"
-      : `cpuEvents=-1; HW counters unavailable on this box. Probe commands: ${probes.map((p) => p.cmd).join(" | ")}. Failures: ${probes
-          .filter((p) => !p.ok)
-          .map((p) => `${p.cmd}: ${p.detail}`)
-          .join("; ") || "perf missing; no instructions:u sample"}. softCpuUs=process.cpuUsage user+system µs avg over rounds`,
-  };
-}
 
 async function readPeakRssKb() {
   try {
@@ -112,10 +63,11 @@ async function readPeakRssKb() {
   return Math.round(process.memoryUsage().rss / 1024);
 }
 
-async function measureOne(name, fn, hw, rounds = 15) {
+async function measureWallSoft(name, fn, rounds = wallRounds) {
   await fn();
   const walls = [];
   let softCpuUs = 0;
+  const softSamples = [];
   for (let i = 0; i < rounds; i++) {
     const cpu0 = process.cpuUsage();
     const t0 = performance.now();
@@ -123,19 +75,19 @@ async function measureOne(name, fn, hw, rounds = 15) {
     const t1 = performance.now();
     const cpu1 = process.cpuUsage(cpu0);
     walls.push(t1 - t0);
-    softCpuUs += cpu1.user + cpu1.system;
+    const soft = cpu1.user + cpu1.system;
+    softCpuUs += soft;
+    softSamples.push(soft);
   }
   walls.sort((a, b) => a - b);
+  softSamples.sort((a, b) => a - b);
   const wallMs = walls[Math.floor(walls.length / 2)];
+  const softMed = softSamples[Math.floor(softSamples.length / 2)];
   return {
-    tool: name,
-    cpuEvents: -1,
-    softCpuUs: Math.round(softCpuUs / rounds),
     wallMs: Math.round(wallMs * 1000) / 1000,
-    peakRssKb: await readPeakRssKb(),
-    binaryBytes: -1,
-    env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} rounds=${rounds}`,
-    notes: hw.notes,
+    softCpuUs: Math.round(softCpuUs / rounds),
+    softCpuUsMedian: softMed,
+    softSamples,
   };
 }
 
@@ -161,8 +113,8 @@ async function prepEditTarget() {
 }
 
 await mkdir(RESULTS, { recursive: true });
-const hw = probeHwCountersEsm();
-console.error("HW probe:", JSON.stringify({ available: hw.available, probes: hw.probes }, null, 2));
+const hw = probeDeterministicMetric();
+console.error("metric probe:", JSON.stringify({ metric: hw.metric, available: hw.available, tried: hw.tried }, null, 2));
 
 const editTargetRel = `edit_sandbox/target_${mode}.txt`;
 await prepEditTarget();
@@ -203,13 +155,53 @@ const scenarios =
 const rows = [];
 for (const [name, fn] of Object.entries(scenarios)) {
   try {
-    const row = await measureOne(name, fn, hw);
+    const ws = await measureWallSoft(name, fn);
+    let cpuEvents = -1;
+    let countStability = null;
+    let countNotes = hw.notes;
+
+    if (hw.metric === "valgrind-ir") {
+      const ir = measureValgrindIr({
+        workerPath: IR_WORKER,
+        workerArgs: [mode, name, String(irRounds)],
+        repeats: 1,
+      });
+      cpuEvents = ir.ir;
+      countStability = ir.stability;
+      countNotes = `${hw.notes}; irRounds=${irRounds} (1 warmup + N in worker)`;
+    } else if (hw.metric === "soft-cpu-proxy" || hw.metric === "page-faults") {
+      // page-faults path still uses softCpu as ratchetable lab count unless we add pe wrapping later
+      const soft = await measureSoftCpuProxy(fn, wallRounds);
+      cpuEvents = soft.count;
+      countStability = soft.stability;
+      countNotes = `${hw.notes}; softProxyRounds=${wallRounds}; stability.cv=${soft.stability.cv}`;
+    } else if (hw.metric === "perf-instructions") {
+      // future: wrap pe_count around worker; for now soft proxy until per-op pe wired
+      const soft = await measureSoftCpuProxy(fn, wallRounds);
+      cpuEvents = soft.count;
+      countStability = soft.stability;
+      countNotes = `${hw.notes}; per-op perf sampling not yet wired → softCpu proxy this row`;
+    }
+
+    const row = {
+      tool: name,
+      metric: hw.metric,
+      cpuEvents,
+      softCpuUs: ws.softCpuUs,
+      wallMs: ws.wallMs,
+      peakRssKb: await readPeakRssKb(),
+      binaryBytes: -1,
+      countStability,
+      env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} wallRounds=${wallRounds} irRounds=${irRounds}`,
+      notes: countNotes,
+    };
     rows.push(row);
-    console.log(JSON.stringify(row));
+    console.log(JSON.stringify({ tool: name, metric: row.metric, cpuEvents, softCpuUs: row.softCpuUs, wallMs: row.wallMs }));
   } catch (e) {
     console.error("FAIL", name, e);
     rows.push({
       tool: name,
+      metric: hw.metric,
       cpuEvents: -1,
       wallMs: -1,
       peakRssKb: -1,
@@ -227,7 +219,16 @@ const out = {
   pin: "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   fixture: FIXTURE,
   measuredAt: new Date().toISOString(),
-  hw: { available: hw.available, probes: hw.probes },
+  metric: hw.metric,
+  hw: {
+    available: hw.available,
+    metric: hw.metric,
+    sample: hw.sample ?? null,
+    tried: hw.tried,
+    probes: hw.probes,
+    softProxy: Boolean(hw.softProxy),
+  },
+  notes: hw.notes,
   rows,
 };
 const outPath = path.join(RESULTS, outName);

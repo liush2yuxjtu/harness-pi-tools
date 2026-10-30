@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /** Merge official+fast baselines into bench-linux.json (or custom out). */
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
@@ -19,6 +18,7 @@ for (const o of official.rows) {
   if (!f) continue;
   rows.push({
     tool: o.tool,
+    metric: o.metric || official.metric || f.metric || null,
     officialCpu: o.cpuEvents ?? -1,
     fastCpu: f.cpuEvents ?? -1,
     officialSoftCpuUs: o.softCpuUs ?? -1,
@@ -28,12 +28,15 @@ for (const o of official.rows) {
     officialRssKb: o.peakRssKb,
     fastRssKb: f.peakRssKb,
     binaryBytes: -1,
+    countStability: { official: o.countStability || null, fast: f.countStability || null },
   });
 }
 
+const metric = official.metric || official.hw?.metric || "unknown";
 const notes = [
-  official.rows[0]?.notes || "",
+  official.notes || official.rows[0]?.notes || "",
   `suite=${official.suite || "small"}`,
+  `metric=${metric}`,
   `hw.available=${official.hw?.available ?? false}`,
 ].join("; ");
 
@@ -42,10 +45,11 @@ const out = {
   pin: official.pin,
   suite: official.suite || "small",
   measuredAt: new Date().toISOString(),
+  metric,
   env: official.rows[0]?.env || "",
   notes,
   hw: official.hw || null,
   rows,
 };
 await writeFile(outPath, JSON.stringify(out, null, 2));
-console.log("wrote", outPath, "rows", rows.length);
+console.log("wrote", outPath, "rows", rows.length, "metric", metric);

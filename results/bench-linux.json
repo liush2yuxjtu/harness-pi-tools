@@ -2,130 +2,323 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "suite": "small",
-  "measuredAt": "2026-10-30T22:44:42.935Z",
-  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=41 paired=in-process",
-  "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs; wallMs=median of 41 paired rounds after warmups; fair in-process A/B",
+  "measuredAt": "2026-10-30T23:16:45.558Z",
+  "metric": "valgrind-ir",
+  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=21 irRounds=20 paired=in-process+valgrind-ir",
+  "notes": "metric=valgrind-ir; sampleIr=94418801; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "hw": {
-    "available": false,
+    "available": true,
+    "metric": "valgrind-ir",
+    "sample": 94418801,
+    "tried": [
+      {
+        "step": 1,
+        "name": "perf-instructions",
+        "ok": false
+      },
+      {
+        "step": 2,
+        "name": "valgrind-ir",
+        "ok": true
+      }
+    ],
     "probes": [
       {
-        "cmd": "command -v perf",
-        "ok": false,
-        "detail": "perf not on PATH"
+        "cmd": "bin/pe_count present",
+        "ok": true,
+        "detail": "/workspace/harness-pi-tools/bin/pe_count"
       },
       {
         "cmd": "cat /proc/sys/kernel/perf_event_paranoid",
         "ok": true,
-        "detail": "2"
-      },
-      {
-        "cmd": "perf stat -e instructions:u -x, -- true",
-        "ok": false,
-        "detail": "skipped (no perf binary)"
+        "detail": "-1"
       },
       {
         "cmd": "ls /sys/bus/event_source/devices",
         "ok": true,
         "detail": "breakpoint,kprobe,msr,power,software,tracepoint,uprobe (cpuPmu=false)"
+      },
+      {
+        "cmd": "command -v perf",
+        "ok": true,
+        "detail": "/usr/bin/perf"
+      },
+      {
+        "cmd": "perf stat -e instructions:u -x, -- true",
+        "ok": false,
+        "detail": "/usr/bin/perf: error while loading shared libraries: libopencsd_c_api.so.1: cannot open shared object file: No such file or directory"
+      },
+      {
+        "cmd": "pe_count hw_instructions -- true",
+        "ok": false,
+        "detail": "perf_event_open: No such file or directory"
+      },
+      {
+        "cmd": "command -v valgrind",
+        "ok": true,
+        "detail": "/usr/bin/valgrind"
+      },
+      {
+        "cmd": "resolveNodeBin",
+        "ok": true,
+        "detail": "/usr/local/lib/nodejs/node"
+      },
+      {
+        "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
+        "ok": true,
+        "detail": "I refs=94418801"
       }
-    ]
+    ],
+    "softProxy": false
   },
   "rows": [
     {
       "tool": "read:small",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 105,
-      "fastSoftCpuUs": 118,
-      "officialWallMs": 0.066,
-      "fastWallMs": 0.063,
+      "metric": "valgrind-ir",
+      "officialCpu": 137656353,
+      "fastCpu": 137813988,
+      "officialSoftCpuUs": 58,
+      "fastSoftCpuUs": 49,
+      "officialWallMs": 0.046,
+      "fastWallMs": 0.044,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 137656353,
+          "min": 137656353,
+          "max": 137656353,
+          "mean": 137656353,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 137813988,
+          "min": 137813988,
+          "max": 137813988,
+          "mean": 137813988,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "read:boundary-lines",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 396,
-      "fastSoftCpuUs": 448,
-      "officialWallMs": 0.339,
-      "fastWallMs": 0.246,
+      "metric": "valgrind-ir",
+      "officialCpu": 248813287,
+      "fastCpu": 249272656,
+      "officialSoftCpuUs": 453,
+      "fastSoftCpuUs": 392,
+      "officialWallMs": 0.369,
+      "fastWallMs": 0.391,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 248813287,
+          "min": 248813287,
+          "max": 248813287,
+          "mean": 248813287,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 249272656,
+          "min": 249272656,
+          "max": 249272656,
+          "mean": 249272656,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "bash",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 1229,
-      "fastSoftCpuUs": 1394,
-      "officialWallMs": 5.066,
-      "fastWallMs": 4.207,
+      "metric": "valgrind-ir",
+      "officialCpu": 346867643,
+      "fastCpu": 346575914,
+      "officialSoftCpuUs": 2210,
+      "fastSoftCpuUs": 2390,
+      "officialWallMs": 5.552,
+      "fastWallMs": 6.394,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 346867643,
+          "min": 346867643,
+          "max": 346867643,
+          "mean": 346867643,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 346575914,
+          "min": 346575914,
+          "max": 346575914,
+          "mean": 346575914,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "edit",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 320,
-      "fastSoftCpuUs": 405,
-      "officialWallMs": 0.304,
-      "fastWallMs": 0.327,
+      "metric": "valgrind-ir",
+      "officialCpu": 144861753,
+      "fastCpu": 145085770,
+      "officialSoftCpuUs": 384,
+      "fastSoftCpuUs": 291,
+      "officialWallMs": 0.234,
+      "fastWallMs": 0.222,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 144861753,
+          "min": 144861753,
+          "max": 144861753,
+          "mean": 144861753,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 145085770,
+          "min": 145085770,
+          "max": 145085770,
+          "mean": 145085770,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "write",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 115,
-      "fastSoftCpuUs": 124,
-      "officialWallMs": 0.124,
-      "fastWallMs": 0.158,
+      "metric": "valgrind-ir",
+      "officialCpu": 136729135,
+      "fastCpu": 136947212,
+      "officialSoftCpuUs": 91,
+      "fastSoftCpuUs": 106,
+      "officialWallMs": 0.073,
+      "fastWallMs": 0.074,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 136729135,
+          "min": 136729135,
+          "max": 136729135,
+          "mean": 136729135,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 136947212,
+          "min": 136947212,
+          "max": 136947212,
+          "mean": 136947212,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "grep",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 1011,
-      "fastSoftCpuUs": 987,
-      "officialWallMs": 3.785,
-      "fastWallMs": 3.993,
+      "metric": "valgrind-ir",
+      "officialCpu": 411525990,
+      "fastCpu": 411165097,
+      "officialSoftCpuUs": 1714,
+      "fastSoftCpuUs": 1771,
+      "officialWallMs": 6.074,
+      "fastWallMs": 6.214,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 411525990,
+          "min": 411525990,
+          "max": 411525990,
+          "mean": 411525990,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 411165097,
+          "min": 411165097,
+          "max": 411165097,
+          "mean": 411165097,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "find",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 1087,
-      "fastSoftCpuUs": 957,
-      "officialWallMs": 5.009,
-      "fastWallMs": 5.035,
+      "metric": "valgrind-ir",
+      "officialCpu": 345961586,
+      "fastCpu": 342993299,
+      "officialSoftCpuUs": 1816,
+      "fastSoftCpuUs": 1811,
+      "officialWallMs": 9.712,
+      "fastWallMs": 10.614,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 345961586,
+          "min": 345961586,
+          "max": 345961586,
+          "mean": 345961586,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 342993299,
+          "min": 342993299,
+          "max": 342993299,
+          "mean": 342993299,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "ls",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 1772,
-      "fastSoftCpuUs": 122,
-      "officialWallMs": 1.815,
-      "fastWallMs": 0.122,
+      "metric": "valgrind-ir",
+      "officialCpu": 322745867,
+      "fastCpu": 219456744,
+      "officialSoftCpuUs": 2053,
+      "fastSoftCpuUs": 183,
+      "officialWallMs": 2.581,
+      "fastWallMs": 0.148,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 322745867,
+          "min": 322745867,
+          "max": 322745867,
+          "mean": 322745867,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 219456744,
+          "min": 219456744,
+          "max": 219456744,
+          "mean": 219456744,
+          "cv": 0
+        }
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Fair in-process A/B: alternate official/fast per scenario (same process, same JIT).
- * Usage: node harness/bench-ab.mjs [--suite small|large|all] [--rounds 31] [--out results/bench-linux.json]
+ * Fair in-process A/B for wall/soft + out-of-process deterministic counts (Valgrind Ir / …).
+ * Usage: node harness/bench-ab.mjs [--suite small|large|all] [--rounds 31] [--ir-rounds 25] [--out results/bench-linux.json]
  */
 import { dirname, join } from "path";
 import { fileURLToPath as __fu } from "url";
@@ -9,18 +9,19 @@ process.env.PATH = join(dirname(__fu(import.meta.url)), "..", "bin") + ":" + (pr
 
 import { performance } from "perf_hooks";
 import { writeFile, mkdir, copyFile, access } from "fs/promises";
-import { readFileSync, readdirSync } from "fs";
 import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import os from "os";
 import * as Official from "../packages/official-shim/src/tools.mjs";
 import * as Fast from "../packages/fast-tools/src/tools.mjs";
+import { probeDeterministicMetric, measureValgrindIr, measureSoftCpuProxy, stabilityStats } from "./lib/deterministic.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const FIXTURE = path.join(ROOT, "fixture");
 const RESULTS = path.join(ROOT, "results");
+const IR_WORKER = path.join(ROOT, "harness", "ir-worker.mjs");
 
 const argv = process.argv.slice(2);
 function flag(name, def) {
@@ -29,54 +30,10 @@ function flag(name, def) {
 }
 const suite = flag("suite", "small");
 const rounds = Number(flag("rounds", "31"));
+const irRounds = Number(flag("ir-rounds", process.env.HARNESS_IR_ROUNDS || "25"));
+const irRepeats = Number(flag("ir-repeats", process.env.HARNESS_IR_REPEATS || "1"));
 const outName = flag("out", suite === "large" ? "bench-linux-large.json" : "bench-linux.json");
-
-function probeHw() {
-  const probes = [];
-  const which = spawnSync("sh", ["-c", "command -v perf"], { encoding: "utf8" });
-  const perfPath = (which.stdout || "").trim();
-  probes.push({ cmd: "command -v perf", ok: Boolean(perfPath), detail: perfPath || "perf not on PATH" });
-  try {
-    probes.push({
-      cmd: "cat /proc/sys/kernel/perf_event_paranoid",
-      ok: true,
-      detail: readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8").trim(),
-    });
-  } catch (e) {
-    probes.push({ cmd: "cat /proc/sys/kernel/perf_event_paranoid", ok: false, detail: String(e.message || e) });
-  }
-  if (perfPath) {
-    const r = spawnSync(perfPath, ["stat", "-e", "instructions:u", "-x", ",", "--", "true"], {
-      encoding: "utf8",
-      timeout: 5000,
-    });
-    probes.push({
-      cmd: "perf stat -e instructions:u -x, -- true",
-      ok: r.status === 0,
-      detail: `${r.stdout || ""}\n${r.stderr || ""}`.trim().slice(0, 300),
-    });
-  } else {
-    probes.push({ cmd: "perf stat -e instructions:u -x, -- true", ok: false, detail: "skipped (no perf binary)" });
-  }
-  try {
-    const devs = readdirSync("/sys/bus/event_source/devices");
-    probes.push({
-      cmd: "ls /sys/bus/event_source/devices",
-      ok: true,
-      detail: `${devs.join(",")} (cpuPmu=${devs.some((d) => d === "cpu" || d.startsWith("cpu"))})`,
-    });
-  } catch (e) {
-    probes.push({ cmd: "ls /sys/bus/event_source/devices", ok: false, detail: String(e.message || e) });
-  }
-  const available = false; // no per-op sampling yet even if perf exists
-  const notes = `cpuEvents=-1; HW counters unavailable on this box. Probe commands: ${probes
-    .map((p) => p.cmd)
-    .join(" | ")}. Failures: ${probes
-    .filter((p) => !p.ok)
-    .map((p) => `${p.cmd}: ${p.detail}`)
-    .join("; ") || "none"}. softCpuUs=process.cpuUsage user+system µs; wallMs=median of ${rounds} paired rounds after warmups; fair in-process A/B`;
-  return { available, probes, notes };
-}
+const skipIr = argv.includes("--skip-ir");
 
 async function ensureLarge() {
   try {
@@ -95,8 +52,7 @@ function median(arr) {
   return a[Math.floor(a.length / 2)];
 }
 
-async function pairedMeasure(name, offFn, fastFn, hwNotes) {
-  // warmups
+async function pairedWallSoft(offFn, fastFn) {
   for (let i = 0; i < 5; i++) {
     await offFn();
     await fastFn();
@@ -105,6 +61,8 @@ async function pairedMeasure(name, offFn, fastFn, hwNotes) {
     fastWalls = [];
   let offSoft = 0,
     fastSoft = 0;
+  const offSoftSamples = [],
+    fastSoftSamples = [];
   for (let i = 0; i < rounds; i++) {
     let cpu0 = process.cpuUsage();
     let t0 = performance.now();
@@ -112,6 +70,7 @@ async function pairedMeasure(name, offFn, fastFn, hwNotes) {
     offWalls.push(performance.now() - t0);
     let c1 = process.cpuUsage(cpu0);
     offSoft += c1.user + c1.system;
+    offSoftSamples.push(c1.user + c1.system);
 
     cpu0 = process.cpuUsage();
     t0 = performance.now();
@@ -119,26 +78,27 @@ async function pairedMeasure(name, offFn, fastFn, hwNotes) {
     fastWalls.push(performance.now() - t0);
     c1 = process.cpuUsage(cpu0);
     fastSoft += c1.user + c1.system;
+    fastSoftSamples.push(c1.user + c1.system);
   }
   return {
-    tool: name,
-    officialCpu: -1,
-    fastCpu: -1,
     officialSoftCpuUs: Math.round(offSoft / rounds),
     fastSoftCpuUs: Math.round(fastSoft / rounds),
+    officialSoftMedian: median(offSoftSamples),
+    fastSoftMedian: median(fastSoftSamples),
     officialWallMs: Math.round(median(offWalls) * 1000) / 1000,
     fastWallMs: Math.round(median(fastWalls) * 1000) / 1000,
-    officialRssKb: -1,
-    fastRssKb: -1,
-    binaryBytes: -1,
+    softStability: {
+      official: stabilityStats(offSoftSamples),
+      fast: stabilityStats(fastSoftSamples),
+    },
   };
 }
 
 await mkdir(RESULTS, { recursive: true });
 if (suite === "large" || suite === "all") await ensureLarge();
 
-const hw = probeHw();
-console.error("HW", JSON.stringify({ available: hw.available, probes: hw.probes }, null, 2));
+const hw = probeDeterministicMetric();
+console.error("metric probe:", JSON.stringify({ metric: hw.metric, available: hw.available, tried: hw.tried }, null, 2));
 
 await copyFile(path.join(FIXTURE, "edit_sandbox/target.txt"), path.join(FIXTURE, "edit_sandbox/target_ab_off.txt"));
 await copyFile(path.join(FIXTURE, "edit_sandbox/target.txt"), path.join(FIXTURE, "edit_sandbox/target_ab_fast.txt"));
@@ -220,15 +180,59 @@ const large = {
 const scenarios = suite === "large" ? large : suite === "all" ? { ...small, ...large } : small;
 const rows = [];
 for (const [name, [o, f]] of Object.entries(scenarios)) {
-  const row = await pairedMeasure(name, o, f, hw.notes);
+  const ws = await pairedWallSoft(o, f);
+  let officialCpu = -1;
+  let fastCpu = -1;
+  let countStability = null;
+
+  if (!skipIr && hw.metric === "valgrind-ir") {
+    const offIr = measureValgrindIr({
+      workerPath: IR_WORKER,
+      workerArgs: ["official", name, String(irRounds)],
+      repeats: irRepeats,
+    });
+    const fastIr = measureValgrindIr({
+      workerPath: IR_WORKER,
+      workerArgs: ["fast", name, String(irRounds)],
+      repeats: irRepeats,
+    });
+    officialCpu = offIr.ir;
+    fastCpu = fastIr.ir;
+    countStability = { official: offIr.stability, fast: fastIr.stability };
+  } else if (hw.metric === "soft-cpu-proxy" || hw.softProxy || hw.metric === "page-faults" || hw.metric === "perf-instructions") {
+    // Use soft median as ratchetable lab count when hard Ir unavailable
+    officialCpu = ws.officialSoftMedian;
+    fastCpu = ws.fastSoftMedian;
+    countStability = ws.softStability;
+  }
+
+  const row = {
+    tool: name,
+    metric: hw.metric,
+    officialCpu,
+    fastCpu,
+    officialSoftCpuUs: ws.officialSoftCpuUs,
+    fastSoftCpuUs: ws.fastSoftCpuUs,
+    officialWallMs: ws.officialWallMs,
+    fastWallMs: ws.fastWallMs,
+    officialRssKb: -1,
+    fastRssKb: -1,
+    binaryBytes: -1,
+    countStability,
+  };
   rows.push(row);
+  const irRatio = officialCpu > 0 && fastCpu > 0 ? Math.round((officialCpu / fastCpu) * 100) / 100 : null;
   console.log(
     JSON.stringify({
       tool: name,
+      metric: hw.metric,
+      officialCpu,
+      fastCpu,
+      irRatio,
+      gateIr05: officialCpu > 0 && fastCpu > 0 ? fastCpu <= officialCpu * 1.05 : null,
       officialWallMs: row.officialWallMs,
       fastWallMs: row.fastWallMs,
-      ratio: Math.round((row.officialWallMs / row.fastWallMs) * 100) / 100,
-      gate5: row.fastWallMs <= row.officialWallMs * 1.05,
+      wallRatio: Math.round((row.officialWallMs / row.fastWallMs) * 100) / 100,
     }),
   );
 }
@@ -238,11 +242,24 @@ const out = {
   pin: "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   suite,
   measuredAt: new Date().toISOString(),
-  env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} rounds=${rounds} paired=in-process`,
+  metric: hw.metric,
+  env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} rounds=${rounds} irRounds=${irRounds} paired=in-process+${hw.metric}`,
   notes: hw.notes,
-  hw: { available: hw.available, probes: hw.probes },
+  hw: {
+    available: hw.available,
+    metric: hw.metric,
+    sample: hw.sample ?? null,
+    tried: hw.tried,
+    probes: hw.probes,
+    softProxy: Boolean(hw.softProxy),
+  },
   rows,
 };
-const outPath = path.join(RESULTS, outName);
-await writeFile(outPath, JSON.stringify(out, null, 2));
-console.log("wrote", outPath);
+const finalOut = path.isAbsolute(outName)
+  ? outName
+  : outName.includes("/")
+    ? path.join(ROOT, outName)
+    : path.join(RESULTS, outName);
+await mkdir(path.dirname(finalOut), { recursive: true });
+await writeFile(finalOut, JSON.stringify(out, null, 2));
+console.log("wrote", finalOut);

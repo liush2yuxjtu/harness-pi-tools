@@ -60,7 +60,19 @@
       "name": "fd-available",
       "status": "PASS",
       "detail": "fd 10.2.0"
+    },
+    {
+      "name": "deterministic-metric",
+      "status": "PASS",
+      "detail": "metric=valgrind-ir; countedRows=8/8; tried=1:perf-instructions:false,2:valgrind-ir:true"
+    },
+    {
+      "name": "count-ratchet",
+      "status": "PASS",
+      "detail": "metric=valgrind-ir; suiteSum fast=1989310680 official=2095161614 limit=2199919695 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
     }
   ],
-  "at": "2026-10-30T22:45:01.883Z"
+  "at": "2026-10-30T23:25:59.947Z",
+  "countCeiling": 1.05,
+  "countToolCeiling": 1.15
 }

@@ -106,9 +106,12 @@ export function truncateHead(content, options = {}) {
     };
   }
 
-  // Under-limit: avoid allocating string[] (official always splits).
+  // Under-limit fast path:
+  // - tiny payloads: split like official (fewer Ir under Valgrind for spawn-bound grep/find)
+  // - larger payloads: countLinesNoAlloc avoids string[] alloc (read hot path)
   if (totalBytes <= maxBytes) {
-    const totalLines = countLinesNoAlloc(content);
+    const totalLines =
+      content.length < 16384 ? splitLinesForCounting(content).length : countLinesNoAlloc(content);
     if (totalLines <= maxLines) {
       return {
         content,

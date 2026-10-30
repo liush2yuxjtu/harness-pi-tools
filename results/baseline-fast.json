@@ -4,112 +4,226 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "fixture": "/workspace/harness-pi-tools/fixture",
-  "measuredAt": "2026-10-30T22:44:45.726Z",
+  "measuredAt": "2026-10-30T23:20:10.607Z",
+  "metric": "valgrind-ir",
   "hw": {
-    "available": false,
+    "available": true,
+    "metric": "valgrind-ir",
+    "sample": 94418826,
+    "tried": [
+      {
+        "step": 1,
+        "name": "perf-instructions",
+        "ok": false
+      },
+      {
+        "step": 2,
+        "name": "valgrind-ir",
+        "ok": true
+      }
+    ],
     "probes": [
       {
-        "cmd": "command -v perf",
-        "ok": false,
-        "detail": "perf not on PATH"
+        "cmd": "bin/pe_count present",
+        "ok": true,
+        "detail": "/workspace/harness-pi-tools/bin/pe_count"
       },
       {
         "cmd": "cat /proc/sys/kernel/perf_event_paranoid",
         "ok": true,
-        "detail": "2"
-      },
-      {
-        "cmd": "perf stat -e instructions:u -x, -- true",
-        "ok": false,
-        "detail": "skipped (no perf binary)"
+        "detail": "-1"
       },
       {
         "cmd": "ls /sys/bus/event_source/devices",
         "ok": true,
         "detail": "breakpoint,kprobe,msr,power,software,tracepoint,uprobe (cpuPmu=false)"
+      },
+      {
+        "cmd": "command -v perf",
+        "ok": true,
+        "detail": "/usr/bin/perf"
+      },
+      {
+        "cmd": "perf stat -e instructions:u -x, -- true",
+        "ok": false,
+        "detail": "/usr/bin/perf: error while loading shared libraries: libopencsd_c_api.so.1: cannot open shared object file: No such file or directory"
+      },
+      {
+        "cmd": "pe_count hw_instructions -- true",
+        "ok": false,
+        "detail": "perf_event_open: No such file or directory"
+      },
+      {
+        "cmd": "command -v valgrind",
+        "ok": true,
+        "detail": "/usr/bin/valgrind"
+      },
+      {
+        "cmd": "resolveNodeBin",
+        "ok": true,
+        "detail": "/usr/local/lib/nodejs/node"
+      },
+      {
+        "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
+        "ok": true,
+        "detail": "I refs=94418826"
       }
-    ]
+    ],
+    "softProxy": false
   },
+  "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "rows": [
     {
       "tool": "read:small",
-      "cpuEvents": -1,
-      "softCpuUs": 149,
-      "wallMs": 0.108,
-      "peakRssKb": 51884,
+      "metric": "valgrind-ir",
+      "cpuEvents": 137797261,
+      "softCpuUs": 99,
+      "wallMs": 0.074,
+      "peakRssKb": 177008,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 137797261,
+        "min": 137797261,
+        "max": 137797261,
+        "mean": 137797261,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "read:boundary-lines",
-      "cpuEvents": -1,
-      "softCpuUs": 584,
-      "wallMs": 0.423,
-      "peakRssKb": 58912,
+      "metric": "valgrind-ir",
+      "cpuEvents": 249281568,
+      "softCpuUs": 834,
+      "wallMs": 0.681,
+      "peakRssKb": 183956,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 249281568,
+        "min": 249281568,
+        "max": 249281568,
+        "mean": 249281568,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "bash",
-      "cpuEvents": -1,
-      "softCpuUs": 1733,
-      "wallMs": 2.614,
-      "peakRssKb": 61084,
+      "metric": "valgrind-ir",
+      "cpuEvents": 346903203,
+      "softCpuUs": 2067,
+      "wallMs": 2.76,
+      "peakRssKb": 186212,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 346903203,
+        "min": 346903203,
+        "max": 346903203,
+        "mean": 346903203,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "edit",
-      "cpuEvents": -1,
-      "softCpuUs": 382,
-      "wallMs": 0.4,
-      "peakRssKb": 61728,
+      "metric": "valgrind-ir",
+      "cpuEvents": 145075988,
+      "softCpuUs": 291,
+      "wallMs": 0.512,
+      "peakRssKb": 188948,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 145075988,
+        "min": 145075988,
+        "max": 145075988,
+        "mean": 145075988,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "write",
-      "cpuEvents": -1,
-      "softCpuUs": 116,
-      "wallMs": 0.094,
-      "peakRssKb": 61732,
+      "metric": "valgrind-ir",
+      "cpuEvents": 136933540,
+      "softCpuUs": 188,
+      "wallMs": 0.26,
+      "peakRssKb": 312328,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 136933540,
+        "min": 136933540,
+        "max": 136933540,
+        "mean": 136933540,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "grep",
-      "cpuEvents": -1,
-      "softCpuUs": 1369,
-      "wallMs": 3.642,
-      "peakRssKb": 62948,
+      "metric": "valgrind-ir",
+      "cpuEvents": 411544073,
+      "softCpuUs": 1867,
+      "wallMs": 5.901,
+      "peakRssKb": 312328,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 411544073,
+        "min": 411544073,
+        "max": 411544073,
+        "mean": 411544073,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "find",
-      "cpuEvents": -1,
-      "softCpuUs": 997,
-      "wallMs": 4.785,
-      "peakRssKb": 63472,
+      "metric": "valgrind-ir",
+      "cpuEvents": 343637971,
+      "softCpuUs": 1949,
+      "wallMs": 10.983,
+      "peakRssKb": 312328,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 343637971,
+        "min": 343637971,
+        "max": 343637971,
+        "mean": 343637971,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     },
     {
       "tool": "ls",
-      "cpuEvents": -1,
-      "softCpuUs": 226,
-      "wallMs": 0.139,
-      "peakRssKb": 66236,
+      "metric": "valgrind-ir",
+      "cpuEvents": 219460670,
+      "softCpuUs": 228,
+      "wallMs": 0.159,
+      "peakRssKb": 314108,
       "binaryBytes": -1,
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
-      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+      "countStability": {
+        "n": 1,
+        "median": 219460670,
+        "min": 219460670,
+        "max": 219460670,
+        "mean": 219460670,
+        "cv": 0
+      },
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=11 irRounds=20",
+      "notes": "metric=valgrind-ir; sampleIr=94418826; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=20 (1 warmup + N in worker)"
     }
   ]
 }

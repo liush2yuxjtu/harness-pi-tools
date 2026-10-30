@@ -1,50 +1,70 @@
-# Metrics · wall / soft CPU / HW counters
+# Metrics · deterministic counts (lab) + wall (display)
 
-## What we record
+## Roles
 
-| field | meaning |
-|---|---|
-| `wallMs` | median of 5 rounds after 1 warmup (`performance.now`) |
-| `softCpuUs` | average `process.cpuUsage` user+system µs over those rounds |
-| `cpuEvents` | HW performance-counter events (instructions:u) when available; else **-1** |
-| `peakRssKb` | Linux `VmHWM` from `/proc/self/status` when present |
+| field | role | meaning |
+|---|---|---|
+| `cpuEvents` / `officialCpu`·`fastCpu` | **Lab / CI primary** | Deterministic (or best-effort) event count selected by the probe chain |
+| `metric` | Lab | Which counter won: `perf-instructions` → `valgrind-ir` → `page-faults` → `soft-cpu-proxy` |
+| `wallMs` | **Display / fair A/B only** | Median wall time — **not** the lab ratchet gate |
+| `softCpuUs` | Secondary | `process.cpuUsage` user+system µs (avg); also feeds soft-cpu-proxy |
+| `peakRssKb` | Required report | Linux `VmHWM` when present |
+| `countStability` | When soft/Ir repeats | `{ n, median, min, max, cv }` over N samples |
 
-## HW counter probe (every `measure.mjs` run)
+## Probe chain (every measure / bench-ab)
 
-`harness/measure.mjs` records probe results under `hw.probes` in the baseline JSON:
+Implemented in `harness/lib/deterministic.mjs`. First success wins:
+
+1. **perf / pe_count HW instructions** (`instructions:u` / `PERF_COUNT_HW_INSTRUCTIONS`)
+2. **Valgrind cachegrind `Ir`** with real Node ELF + `node --predictable` (`harness/ir-worker.mjs`)
+3. **Other non-wall events** (`bin/pe_count page_faults`)
+4. **soft-cpu-proxy** — median `process.cpuUsage` µs; still written into `cpuEvents` so verify can ratchet; document `countStability.cv`
+
+Results JSON stores `hw.tried`, `hw.probes`, and top-level `metric`.
+
+### This box (2026-10-31 Asia/Taipei)
+
+- No `cpu` PMU under `/sys/bus/event_source/devices` → HW instructions **SKIP** (`ENOENT` / no PMU)
+- Distro `perf` may be present but broken (missing `.so`); `bin/pe_count` is the local openat helper
+- **`valgrind-ir` wins** after installing `valgrind` + `libc6-dbg`
+- `wallMs` still recorded for README tables; verify **does not** gate on wall
+
+### SKIP rules
+
+- A step is SKIP/failed only after it was attempted and recorded in `hw.tried` / `hw.probes`
+- Lab gate SKIP for counts only if **every** hard path failed **and** soft proxy produced no finite counts (should not happen)
+- macOS bench remains a platform SKIP when no Mac host (`results/bench-macos.json`)
+
+## Collecting
 
 ```bash
-command -v perf
-cat /proc/sys/kernel/perf_event_paranoid
-perf stat -e instructions:u -x, -- true
-ls /sys/bus/event_source/devices
+# Fair A/B (preferred for README + verify artifact)
+node harness/bench-ab.mjs --suite small --rounds 31 --ir-rounds 25
+node harness/bench-ab.mjs --suite large --rounds 21 --ir-rounds 15
+
+# Single-mode baselines (verify artifacts)
+node harness/measure.mjs official baseline-official.json --suite small --ir-rounds 25
+node harness/measure.mjs fast baseline-fast.json --suite small --ir-rounds 25
+node harness/measure.mjs official baseline-official-large.json --suite large --ir-rounds 15
+node harness/measure.mjs fast baseline-fast-large.json --suite large --ir-rounds 15
+
+# Optional merge (bench-ab already writes bench-linux*.json)
+node harness/merge-bench.mjs results/baseline-official.json results/baseline-fast.json results/bench-linux.json
 ```
 
-### This box (typical SKIP)
+Valgrind Ir is slow (full process instrumentation + `--trace-children=yes`). `ir-rounds` amortizes Node startup by repeating the tool call inside one worker; Ir = sum of cachegrind `summary:` across parent and children.
 
-- `perf` binary: **not installed** (`command -v perf` empty)
-- `/sys/bus/event_source/devices`: present but often **no `cpu` PMU** in constrained VMs
-- Result: `cpuEvents=-1` on every row; `notes` repeats the probe summary; rely on `softCpuUs` + `wallMs`
+## Verify ratchet
 
-### How to get real cpuEvents later
+`harness/verify.mjs`:
 
-1. Install `linux-tools-$(uname -r)` or distro `linux-perf`.
-2. Ensure paranoid ≤ 2 for user events (or run with sufficient caps).
-3. Re-run `node harness/measure.mjs official` — when `hw.available=true`, notes flip; a future revision can sample per-op via `perf stat -e instructions:u -- node …`.
+- `deterministic-metric` — `bench-linux.json` has a `metric` and countable rows
+- `count-ratchet`:
+  - **Suite sum:** `sum(fastCpu) <= sum(officialCpu) × HARNESS_COUNT_CEILING` (default **1.05**)
+  - **Per-tool:** each tool `fastCpu <= officialCpu × HARNESS_COUNT_TOOL_CEILING` (default **1.15**)
+- Valgrind Ir uses `--trace-children=yes` and **sums** all `summary:` lines in per-PID cachegrind outs (parent Node + `rg`/`fd`/`bash` children)
+- **`wallMs` is not gated**
 
 ## Suites
 
-```bash
-node harness/measure.mjs official baseline-official.json --suite small
-node harness/measure.mjs fast baseline-fast.json --suite small
-node harness/measure.mjs official baseline-official-large.json --suite large
-node harness/measure.mjs fast baseline-fast-large.json --suite large
-node harness/merge-bench.mjs results/baseline-official.json results/baseline-fast.json results/bench-linux.json
-node harness/merge-bench.mjs results/baseline-official-large.json results/baseline-fast-large.json results/bench-linux-large.json
-```
-
 Large fixtures: `node fixture/generate-large.mjs` (gitignored payloads).
-
-## Fair A/B
-
-Prefer `node harness/bench-ab.mjs --suite small|large` for README numbers (in-process paired rounds). `measure.mjs` remains for single-mode baselines required by verify artifacts.

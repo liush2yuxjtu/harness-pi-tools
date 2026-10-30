@@ -48,8 +48,8 @@
 
 | 指标 | 角色 | 说明 |
 |---|---|---|
-| CPU 事件 / HW counters | **主** | 尽量不依赖具体机器墙钟；跨机可比 |
-| 墙钟 latency | 次 | 可复现基准，注明环境 |
+| CPU 事件 / 确定性计数（perf instructions → Valgrind Ir → …） | **主（lab）** | 本机按探测链选取；见 docs/METRICS.md |
+| 墙钟 latency | 次（展示） | 可复现基准；**不当 lab 门** |
 | 峰值 RSS | 必报 | 内存足迹 |
 | 产物体积 | 若有原生二进制则必报 | release 体积 |
 

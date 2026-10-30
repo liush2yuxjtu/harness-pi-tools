@@ -2,106 +2,261 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "suite": "large",
-  "measuredAt": "2026-10-30T22:44:45.137Z",
-  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=21 paired=in-process",
-  "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs; wallMs=median of 21 paired rounds after warmups; fair in-process A/B",
+  "measuredAt": "2026-10-30T23:22:48.652Z",
+  "metric": "valgrind-ir",
+  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=11 irRounds=12 paired=in-process+valgrind-ir",
+  "notes": "metric=valgrind-ir; sampleIr=94418863; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "hw": {
-    "available": false,
+    "available": true,
+    "metric": "valgrind-ir",
+    "sample": 94418863,
+    "tried": [
+      {
+        "step": 1,
+        "name": "perf-instructions",
+        "ok": false
+      },
+      {
+        "step": 2,
+        "name": "valgrind-ir",
+        "ok": true
+      }
+    ],
     "probes": [
       {
-        "cmd": "command -v perf",
-        "ok": false,
-        "detail": "perf not on PATH"
+        "cmd": "bin/pe_count present",
+        "ok": true,
+        "detail": "/workspace/harness-pi-tools/bin/pe_count"
       },
       {
         "cmd": "cat /proc/sys/kernel/perf_event_paranoid",
         "ok": true,
-        "detail": "2"
-      },
-      {
-        "cmd": "perf stat -e instructions:u -x, -- true",
-        "ok": false,
-        "detail": "skipped (no perf binary)"
+        "detail": "-1"
       },
       {
         "cmd": "ls /sys/bus/event_source/devices",
         "ok": true,
         "detail": "breakpoint,kprobe,msr,power,software,tracepoint,uprobe (cpuPmu=false)"
+      },
+      {
+        "cmd": "command -v perf",
+        "ok": true,
+        "detail": "/usr/bin/perf"
+      },
+      {
+        "cmd": "perf stat -e instructions:u -x, -- true",
+        "ok": false,
+        "detail": "/usr/bin/perf: error while loading shared libraries: libopencsd_c_api.so.1: cannot open shared object file: No such file or directory"
+      },
+      {
+        "cmd": "pe_count hw_instructions -- true",
+        "ok": false,
+        "detail": "perf_event_open: No such file or directory"
+      },
+      {
+        "cmd": "command -v valgrind",
+        "ok": true,
+        "detail": "/usr/bin/valgrind"
+      },
+      {
+        "cmd": "resolveNodeBin",
+        "ok": true,
+        "detail": "/usr/local/lib/nodejs/node"
+      },
+      {
+        "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
+        "ok": true,
+        "detail": "I refs=94418863"
       }
-    ]
+    ],
+    "softProxy": false
   },
   "rows": [
     {
       "tool": "read:large-2mb",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 7433,
-      "fastSoftCpuUs": 6982,
-      "officialWallMs": 5.463,
-      "fastWallMs": 5.535,
+      "metric": "valgrind-ir",
+      "officialCpu": 823042490,
+      "fastCpu": 805982855,
+      "officialSoftCpuUs": 11141,
+      "fastSoftCpuUs": 6934,
+      "officialWallMs": 11.513,
+      "fastWallMs": 8.031,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 823042490,
+          "min": 823042490,
+          "max": 823042490,
+          "mean": 823042490,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 805982855,
+          "min": 805982855,
+          "max": 805982855,
+          "mean": 805982855,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "read:near-2000",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 378,
-      "fastSoftCpuUs": 329,
-      "officialWallMs": 0.381,
-      "fastWallMs": 0.351,
+      "metric": "valgrind-ir",
+      "officialCpu": 205857037,
+      "fastCpu": 206187578,
+      "officialSoftCpuUs": 363,
+      "fastSoftCpuUs": 422,
+      "officialWallMs": 0.324,
+      "fastWallMs": 0.408,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 205857037,
+          "min": 205857037,
+          "max": 205857037,
+          "mean": 205857037,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 206187578,
+          "min": 206187578,
+          "max": 206187578,
+          "mean": 206187578,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "read:near-50kb",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 300,
-      "fastSoftCpuUs": 346,
-      "officialWallMs": 0.188,
-      "fastWallMs": 0.182,
+      "metric": "valgrind-ir",
+      "officialCpu": 168863864,
+      "fastCpu": 166279906,
+      "officialSoftCpuUs": 239,
+      "fastSoftCpuUs": 242,
+      "officialWallMs": 0.186,
+      "fastWallMs": 0.177,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 168863864,
+          "min": 168863864,
+          "max": 168863864,
+          "mean": 168863864,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 166279906,
+          "min": 166279906,
+          "max": 166279906,
+          "mean": 166279906,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "ls:dir-2k",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 8261,
-      "fastSoftCpuUs": 1076,
-      "officialWallMs": 9.167,
-      "fastWallMs": 1.05,
+      "metric": "valgrind-ir",
+      "officialCpu": 543386389,
+      "fastCpu": 303264046,
+      "officialSoftCpuUs": 10161,
+      "fastSoftCpuUs": 1151,
+      "officialWallMs": 15.308,
+      "fastWallMs": 1.018,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 543386389,
+          "min": 543386389,
+          "max": 543386389,
+          "mean": 543386389,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 303264046,
+          "min": 303264046,
+          "max": 303264046,
+          "mean": 303264046,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "find:dir-2k",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 1829,
-      "fastSoftCpuUs": 1803,
-      "officialWallMs": 7.954,
-      "fastWallMs": 7.572,
+      "metric": "valgrind-ir",
+      "officialCpu": 472996205,
+      "fastCpu": 507217072,
+      "officialSoftCpuUs": 2391,
+      "fastSoftCpuUs": 5177,
+      "officialWallMs": 11.361,
+      "fastWallMs": 13.467,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 472996205,
+          "min": 472996205,
+          "max": 472996205,
+          "mean": 472996205,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 507217072,
+          "min": 507217072,
+          "max": 507217072,
+          "mean": 507217072,
+          "cv": 0
+        }
+      }
     },
     {
       "tool": "grep:large-2mb",
-      "officialCpu": -1,
-      "fastCpu": -1,
-      "officialSoftCpuUs": 23917,
-      "fastSoftCpuUs": 15537,
-      "officialWallMs": 15.785,
-      "fastWallMs": 16.391,
+      "metric": "valgrind-ir",
+      "officialCpu": 2128650791,
+      "fastCpu": 2120180850,
+      "officialSoftCpuUs": 16570,
+      "fastSoftCpuUs": 15765,
+      "officialWallMs": 18.882,
+      "fastWallMs": 18.69,
       "officialRssKb": -1,
       "fastRssKb": -1,
-      "binaryBytes": -1
+      "binaryBytes": -1,
+      "countStability": {
+        "official": {
+          "n": 1,
+          "median": 2128650791,
+          "min": 2128650791,
+          "max": 2128650791,
+          "mean": 2128650791,
+          "cv": 0
+        },
+        "fast": {
+          "n": 1,
+          "median": 2120180850,
+          "min": 2120180850,
+          "max": 2120180850,
+          "mean": 2120180850,
+          "cv": 0
+        }
+      }
     }
   ]
 }
