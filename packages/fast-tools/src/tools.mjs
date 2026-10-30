@@ -1,7 +1,7 @@
 import { readFile, writeFile, access, mkdir, readdir, stat, constants } from "fs/promises";
 import { spawn } from "child_process";
 import path from "path";
-import { truncateHead, truncateTail, truncateLine, DEFAULT_MAX_BYTES, formatSize } from "./truncate.mjs";
+import { truncateHead, truncateHeadFromSplit, truncateTail, truncateLine, DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize } from "./truncate.mjs";
 
 const DEFAULT_LS_LIMIT = 500;
 
@@ -15,27 +15,28 @@ export async function toolRead(cwd, { filePath, offset, limit }) {
   const startLine = offset ? Math.max(0, offset - 1) : 0;
   const startLineDisplay = startLine + 1;
   if (startLine >= allLines.length) throw new Error(`Offset ${offset} is beyond end of file (${allLines.length} lines total)`);
-  let selectedContent;
+  let selectedSplit;
   let userLimitedLines;
   if (limit !== undefined) {
     const endLine = Math.min(startLine + limit, allLines.length);
-    selectedContent = allLines.slice(startLine, endLine).join("\n");
+    selectedSplit = allLines.slice(startLine, endLine);
     userLimitedLines = endLine - startLine;
-  } else if (startLine === 0) {
-    // skip redundant slice/join when reading whole file
-    selectedContent = textContent.endsWith("\n")
-      ? textContent.slice(0, -1).includes("\n") || textContent.length
-        ? allLines.join("\n") // keep official semantics for trailing newline counting via truncate
-        : textContent
-      : textContent;
-    // Official uses allLines.slice(0).join("\n") which DROPS a trailing empty line from final \n
-    // because split keeps trailing "" but join of ["a","b",""] = "a\nb\n" — actually join keeps it
-    // "a\nb\n".split("\n") => ["a","b",""]; join => "a\nb\n". Same as original.
-    selectedContent = allLines.join("\n");
   } else {
-    selectedContent = allLines.slice(startLine).join("\n");
+    selectedSplit = allLines.slice(startLine);
   }
-  const truncation = truncateHead(selectedContent);
+  let truncation;
+  if (limit === undefined && startLine === 0) {
+    // Whole-file: under-limit → truncateHead no-alloc path; over-limit → reuse allLines (no re-split).
+    const totalBytes = Buffer.byteLength(textContent, "utf-8");
+    const countingLines = textContent.endsWith("\n") ? allLines.length - 1 : allLines.length;
+    if (countingLines <= DEFAULT_MAX_LINES && totalBytes <= DEFAULT_MAX_BYTES) {
+      truncation = truncateHead(textContent);
+    } else {
+      truncation = truncateHeadFromSplit(allLines);
+    }
+  } else {
+    truncation = truncateHeadFromSplit(selectedSplit);
+  }
   let outputText;
   if (truncation.firstLineExceedsLimit) {
     outputText = `[Line ${startLineDisplay} is ${formatSize(Buffer.byteLength(allLines[startLine], "utf-8"))}, exceeds ${formatSize(DEFAULT_MAX_BYTES)} limit. Use bash: sed -n '${startLineDisplay}p' ${filePath} | head -c ${DEFAULT_MAX_BYTES}]`;

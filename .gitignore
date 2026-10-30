@@ -3,3 +3,16 @@ node_modules/
 *.log
 .env
 .env.*
+
+# Generated large fixtures (recreate with node fixture/generate-large.mjs)
+fixture/large/dir_2k/
+fixture/large/big_2_5mb.txt
+fixture/large/near_2000_lines.txt
+fixture/large/near_50kb.txt
+fixture/large/deep/
+results/hw-probe-*.log
+fixture/edit_sandbox/target_ab_*.txt
+fixture/write_sandbox/out_ab_*.txt
+fixture/write_sandbox/out_official.txt
+fixture/write_sandbox/out_fast.txt
+fixture/write_sandbox/parity_*.txt

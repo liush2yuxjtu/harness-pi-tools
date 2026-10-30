@@ -1,0 +1,107 @@
+{
+  "platform": "linux",
+  "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
+  "suite": "large",
+  "measuredAt": "2026-10-30T22:44:45.137Z",
+  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=21 paired=in-process",
+  "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs; wallMs=median of 21 paired rounds after warmups; fair in-process A/B",
+  "hw": {
+    "available": false,
+    "probes": [
+      {
+        "cmd": "command -v perf",
+        "ok": false,
+        "detail": "perf not on PATH"
+      },
+      {
+        "cmd": "cat /proc/sys/kernel/perf_event_paranoid",
+        "ok": true,
+        "detail": "2"
+      },
+      {
+        "cmd": "perf stat -e instructions:u -x, -- true",
+        "ok": false,
+        "detail": "skipped (no perf binary)"
+      },
+      {
+        "cmd": "ls /sys/bus/event_source/devices",
+        "ok": true,
+        "detail": "breakpoint,kprobe,msr,power,software,tracepoint,uprobe (cpuPmu=false)"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "tool": "read:large-2mb",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 7433,
+      "fastSoftCpuUs": 6982,
+      "officialWallMs": 5.463,
+      "fastWallMs": 5.535,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    },
+    {
+      "tool": "read:near-2000",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 378,
+      "fastSoftCpuUs": 329,
+      "officialWallMs": 0.381,
+      "fastWallMs": 0.351,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    },
+    {
+      "tool": "read:near-50kb",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 300,
+      "fastSoftCpuUs": 346,
+      "officialWallMs": 0.188,
+      "fastWallMs": 0.182,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    },
+    {
+      "tool": "ls:dir-2k",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 8261,
+      "fastSoftCpuUs": 1076,
+      "officialWallMs": 9.167,
+      "fastWallMs": 1.05,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    },
+    {
+      "tool": "find:dir-2k",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 1829,
+      "fastSoftCpuUs": 1803,
+      "officialWallMs": 7.954,
+      "fastWallMs": 7.572,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    },
+    {
+      "tool": "grep:large-2mb",
+      "officialCpu": -1,
+      "fastCpu": -1,
+      "officialSoftCpuUs": 23917,
+      "fastSoftCpuUs": 15537,
+      "officialWallMs": 15.785,
+      "fastWallMs": 16.391,
+      "officialRssKb": -1,
+      "fastRssKb": -1,
+      "binaryBytes": -1
+    }
+  ]
+}

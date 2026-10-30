@@ -47,6 +47,11 @@
       "detail": "present"
     },
     {
+      "name": "docs/METRICS.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
       "name": "forbid-unsafe",
       "status": "PASS",
       "detail": "no unsafe keyword under native/packages"
@@ -57,5 +62,5 @@
       "detail": "fd 10.2.0"
     }
   ],
-  "at": "2026-10-30T21:07:39.678Z"
+  "at": "2026-10-30T22:45:01.883Z"
 }

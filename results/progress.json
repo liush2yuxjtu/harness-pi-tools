@@ -1,11 +1,11 @@
 {
   "status": "complete",
-  "phase": 12,
-  "phaseTitle": "Docs & Release",
+  "goal": "harness-v0.2",
+  "version": "0.2.0",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "parity": true,
   "verify": true,
   "macos": "SKIP",
-  "at": "2026-10-31T05:07:30+08:00",
-  "note": "FULL path complete on linux; hourly Go-on routine may delete itself"
+  "at": "2026-10-31T06:45:30+08:00",
+  "note": "read:small gate pass; large fixtures + HW SKIP documented; ab-demo ready"
 }

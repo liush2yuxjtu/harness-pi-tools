@@ -1,0 +1,95 @@
+{
+  "mode": "official",
+  "suite": "large",
+  "platform": "linux",
+  "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
+  "fixture": "/workspace/harness-pi-tools/fixture",
+  "measuredAt": "2026-10-30T22:44:08.417Z",
+  "hw": {
+    "available": false,
+    "probes": [
+      {
+        "cmd": "command -v perf",
+        "ok": false,
+        "detail": "perf not on PATH"
+      },
+      {
+        "cmd": "cat /proc/sys/kernel/perf_event_paranoid",
+        "ok": true,
+        "detail": "2"
+      },
+      {
+        "cmd": "perf stat -e instructions:u -x, -- true",
+        "ok": false,
+        "detail": "skipped (no perf binary)"
+      },
+      {
+        "cmd": "ls /sys/bus/event_source/devices",
+        "ok": true,
+        "detail": "breakpoint,kprobe,msr,power,software,tracepoint,uprobe (cpuPmu=false)"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "tool": "read:large-2mb",
+      "cpuEvents": -1,
+      "softCpuUs": 11794,
+      "wallMs": 23.273,
+      "peakRssKb": 112160,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    },
+    {
+      "tool": "read:near-2000",
+      "cpuEvents": -1,
+      "softCpuUs": 676,
+      "wallMs": 0.438,
+      "peakRssKb": 114356,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    },
+    {
+      "tool": "read:near-50kb",
+      "cpuEvents": -1,
+      "softCpuUs": 1199,
+      "wallMs": 0.363,
+      "peakRssKb": 117204,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    },
+    {
+      "tool": "ls:dir-2k",
+      "cpuEvents": -1,
+      "softCpuUs": 15528,
+      "wallMs": 49.319,
+      "peakRssKb": 119172,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    },
+    {
+      "tool": "find:dir-2k",
+      "cpuEvents": -1,
+      "softCpuUs": 1842,
+      "wallMs": 20.518,
+      "peakRssKb": 119492,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    },
+    {
+      "tool": "grep:large-2mb",
+      "cpuEvents": -1,
+      "softCpuUs": 18633,
+      "wallMs": 43.86,
+      "peakRssKb": 177592,
+      "binaryBytes": -1,
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15",
+      "notes": "cpuEvents=-1; HW counters unavailable on this box. Probe commands: command -v perf | cat /proc/sys/kernel/perf_event_paranoid | perf stat -e instructions:u -x, -- true | ls /sys/bus/event_source/devices. Failures: command -v perf: perf not on PATH; perf stat -e instructions:u -x, -- true: skipped (no perf binary). softCpuUs=process.cpuUsage user+system µs avg over rounds"
+    }
+  ]
+}
