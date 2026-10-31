@@ -1,42 +1,28 @@
-import { readFile, writeFile, access, mkdir, readdir, stat, constants } from "fs/promises";
+import { readFile, writeFile, mkdir, readdir, stat } from "fs/promises";
 import { spawn } from "child_process";
 import path from "path";
-import { truncateHead, truncateHeadFromSplit, truncateTail, truncateLine, DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize } from "./truncate.mjs";
+import {
+  truncateHead,
+  truncateHeadFromSplit,
+  truncateTail,
+  truncateLine,
+  underLimitTruncation,
+  DEFAULT_MAX_BYTES,
+  DEFAULT_MAX_LINES,
+  formatSize,
+} from "./truncate.mjs";
 
 const DEFAULT_LS_LIMIT = 500;
 
-export async function toolRead(cwd, { filePath, offset, limit }) {
-  const absolutePath = path.resolve(cwd, filePath);
-  await access(absolutePath, constants.R_OK);
-  const buffer = await readFile(absolutePath);
-  const textContent = buffer.toString("utf-8");
-  const allLines = textContent.split("\n");
-  const totalFileLines = allLines.length;
-  const startLine = offset ? Math.max(0, offset - 1) : 0;
-  const startLineDisplay = startLine + 1;
-  if (startLine >= allLines.length) throw new Error(`Offset ${offset} is beyond end of file (${allLines.length} lines total)`);
-  let selectedSplit;
-  let userLimitedLines;
-  if (limit !== undefined) {
-    const endLine = Math.min(startLine + limit, allLines.length);
-    selectedSplit = allLines.slice(startLine, endLine);
-    userLimitedLines = endLine - startLine;
-  } else {
-    selectedSplit = allLines.slice(startLine);
-  }
-  let truncation;
-  if (limit === undefined && startLine === 0) {
-    // Whole-file: under-limit → truncateHead no-alloc path; over-limit → reuse allLines (no re-split).
-    const totalBytes = Buffer.byteLength(textContent, "utf-8");
-    const countingLines = textContent.endsWith("\n") ? allLines.length - 1 : allLines.length;
-    if (countingLines <= DEFAULT_MAX_LINES && totalBytes <= DEFAULT_MAX_BYTES) {
-      truncation = truncateHead(textContent);
-    } else {
-      truncation = truncateHeadFromSplit(allLines);
-    }
-  } else {
-    truncation = truncateHeadFromSplit(selectedSplit);
-  }
+function buildReadOutput({
+  truncation,
+  startLineDisplay,
+  totalFileLines,
+  allLines,
+  startLine,
+  userLimitedLines,
+  filePath,
+}) {
   let outputText;
   if (truncation.firstLineExceedsLimit) {
     outputText = `[Line ${startLineDisplay} is ${formatSize(Buffer.byteLength(allLines[startLine], "utf-8"))}, exceeds ${formatSize(DEFAULT_MAX_BYTES)} limit. Use bash: sed -n '${startLineDisplay}p' ${filePath} | head -c ${DEFAULT_MAX_BYTES}]`;
@@ -59,17 +45,77 @@ export async function toolRead(cwd, { filePath, offset, limit }) {
   return { text: outputText, truncation };
 }
 
+export async function toolRead(cwd, { filePath, offset, limit }) {
+  const absolutePath = path.resolve(cwd, filePath);
+  // Skip access(): readFile raises ENOENT/EACCES with equivalent failure for harness parity.
+  const buffer = await readFile(absolutePath);
+  const textContent = buffer.toString("utf-8");
+  const allLines = textContent.split("\n");
+  const totalFileLines = allLines.length;
+  const startLine = offset ? Math.max(0, offset - 1) : 0;
+  const startLineDisplay = startLine + 1;
+  if (startLine >= allLines.length) {
+    throw new Error(`Offset ${offset} is beyond end of file (${allLines.length} lines total)`);
+  }
+
+  let selectedSplit;
+  let userLimitedLines;
+  if (limit !== undefined) {
+    const endLine = Math.min(startLine + limit, allLines.length);
+    selectedSplit = allLines.slice(startLine, endLine);
+    userLimitedLines = endLine - startLine;
+  } else {
+    selectedSplit = allLines.slice(startLine);
+  }
+
+  let truncation;
+  if (limit === undefined && startLine === 0) {
+    // Whole-file: reuse allLines; pass totalBytes to skip join when over caps.
+    const totalBytes = buffer.length;
+    const countingLines = textContent.endsWith("\n") ? allLines.length - 1 : allLines.length;
+    if (countingLines <= DEFAULT_MAX_LINES && totalBytes <= DEFAULT_MAX_BYTES) {
+      truncation = underLimitTruncation(textContent, totalBytes, countingLines);
+    } else {
+      truncation = truncateHeadFromSplit(allLines, {
+        totalBytes,
+        underLimitContent: textContent,
+      });
+    }
+  } else {
+    truncation = truncateHeadFromSplit(selectedSplit);
+  }
+
+  return buildReadOutput({
+    truncation,
+    startLineDisplay,
+    totalFileLines,
+    allLines,
+    startLine,
+    userLimitedLines,
+    filePath,
+  });
+}
+
 export async function toolWrite(cwd, { filePath, content }) {
   const absolutePath = path.resolve(cwd, filePath);
-  await mkdir(path.dirname(absolutePath), { recursive: true });
-  await writeFile(absolutePath, content, "utf-8");
+  // Common case: parent dir already exists — skip mkdir (wins Valgrind Ir vs recursive mkdir).
+  try {
+    await writeFile(absolutePath, content, "utf-8");
+  } catch (err) {
+    if (err && err.code === "ENOENT") {
+      await mkdir(path.dirname(absolutePath), { recursive: true });
+      await writeFile(absolutePath, content, "utf-8");
+    } else {
+      throw err;
+    }
+  }
   return { text: `Successfully wrote to ${filePath}` };
 }
 
 export async function toolEdit(cwd, { filePath, edits }) {
   const absolutePath = path.resolve(cwd, filePath);
-  await access(absolutePath, constants.R_OK | constants.W_OK);
-  let text = (await readFile(absolutePath)).toString("utf-8");
+  // Skip access(R_OK|W_OK); decode utf-8 in one step.
+  let text = await readFile(absolutePath, "utf-8");
   for (const { oldText, newText } of edits) {
     const idx = text.indexOf(oldText);
     if (idx < 0) throw new Error(`oldText not found in ${filePath}`);
@@ -85,20 +131,23 @@ export async function toolLs(cwd, { dirPath, limit } = {}) {
   const st = await stat(absolute);
   if (!st.isDirectory()) throw new Error(`Not a directory: ${absolute}`);
   const effectiveLimit = limit ?? DEFAULT_LS_LIMIT;
-  // FAST: withFileTypes avoids per-entry stat syscall
   const dirents = await readdir(absolute, { withFileTypes: true });
   dirents.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
   const results = [];
   let entryLimitReached = false;
   for (const d of dirents) {
-    if (results.length >= effectiveLimit) { entryLimitReached = true; break; }
+    if (results.length >= effectiveLimit) {
+      entryLimitReached = true;
+      break;
+    }
     let isDir = d.isDirectory();
-    // Handle symlinks similarly to stat follow? official uses stat which follows symlinks
     if (d.isSymbolicLink()) {
       try {
         const entryStat = await stat(path.join(absolute, d.name));
         isDir = entryStat.isDirectory();
-      } catch { continue; }
+      } catch {
+        continue;
+      }
     }
     results.push(d.name + (isDir ? "/" : ""));
   }
@@ -122,7 +171,11 @@ function runSpawn(bin, args, { cwd } = {}) {
     child.stderr.on("data", (d) => errChunks.push(d));
     child.on("error", reject);
     child.on("close", (code) => {
-      resolve({ code, stdout: Buffer.concat(chunks).toString("utf-8"), stderr: Buffer.concat(errChunks).toString("utf-8") });
+      resolve({
+        code,
+        stdout: Buffer.concat(chunks).toString("utf-8"),
+        stderr: Buffer.concat(errChunks).toString("utf-8"),
+      });
     });
   });
 }
@@ -163,11 +216,18 @@ export async function toolFind(cwd, { pattern = ".", path: searchPath = "." } = 
 export async function toolBash(cwd, { command }) {
   const { code, stdout, stderr } = await new Promise((resolve, reject) => {
     const child = spawn("bash", ["-c", command], { cwd, stdio: ["ignore", "pipe", "pipe"] });
-    const out = [], err = [];
+    const out = [],
+      err = [];
     child.stdout.on("data", (d) => out.push(d));
     child.stderr.on("data", (d) => err.push(d));
     child.on("error", reject);
-    child.on("close", (c) => resolve({ code: c, stdout: Buffer.concat(out).toString("utf-8"), stderr: Buffer.concat(err).toString("utf-8") }));
+    child.on("close", (c) =>
+      resolve({
+        code: c,
+        stdout: Buffer.concat(out).toString("utf-8"),
+        stderr: Buffer.concat(err).toString("utf-8"),
+      }),
+    );
   });
   const combined = stdout + (stderr ? (stdout ? "\n" : "") + stderr : "");
   const truncation = truncateTail(combined);

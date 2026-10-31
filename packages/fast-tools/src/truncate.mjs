@@ -55,6 +55,23 @@ function truncateFromCountingLines(lines, totalBytes, maxLines, maxBytes, underL
       maxBytes,
     };
   }
+  // Already under byte cap → must be line truncation; skip per-line byteLength.
+  if (totalBytes <= maxBytes) {
+    const outputContent = lines.slice(0, maxLines).join("\n");
+    return {
+      content: outputContent,
+      truncated: true,
+      truncatedBy: "lines",
+      totalLines,
+      totalBytes,
+      outputLines: maxLines,
+      outputBytes: Buffer.byteLength(outputContent, "utf-8"),
+      lastLinePartial: false,
+      firstLineExceedsLimit: false,
+      maxLines,
+      maxBytes,
+    };
+  }
   const outputLinesArr = [];
   let outputBytesCount = 0;
   let truncatedBy = "lines";
@@ -107,11 +124,29 @@ export function truncateHead(content, options = {}) {
   }
 
   // Under-limit fast path:
-  // - tiny payloads: split like official (fewer Ir under Valgrind for spawn-bound grep/find)
-  // - larger payloads: countLinesNoAlloc avoids string[] alloc (read hot path)
+  // Prefer native split for small payloads (Valgrind Ir: C++ split << JS charCodeAt loop).
+  // Larger under-byte payloads: countLinesNoAlloc avoids string[] when returning under-limit.
   if (totalBytes <= maxBytes) {
-    const totalLines =
-      content.length < 16384 ? splitLinesForCounting(content).length : countLinesNoAlloc(content);
+    if (content.length < 16384) {
+      const lines = splitLinesForCounting(content);
+      if (lines.length <= maxLines) {
+        return {
+          content,
+          truncated: false,
+          truncatedBy: null,
+          totalLines: lines.length,
+          totalBytes,
+          outputLines: lines.length,
+          outputBytes: totalBytes,
+          lastLinePartial: false,
+          firstLineExceedsLimit: false,
+          maxLines,
+          maxBytes,
+        };
+      }
+      return truncateFromCountingLines(lines, totalBytes, maxLines, maxBytes, content);
+    }
+    const totalLines = countLinesNoAlloc(content);
     if (totalLines <= maxLines) {
       return {
         content,
@@ -135,19 +170,45 @@ export function truncateHead(content, options = {}) {
 
 /**
  * Prefer this from toolRead when lines are already split via `content.split("\\n")`.
- * Skips the official join→re-split cycle.
+ * Pass totalBytes / underLimitContent to skip joining the full file when over the line cap.
  */
 export function truncateHeadFromSplit(splitLines, options = {}) {
   const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
-  const joined = splitLines.join("\n");
-  const totalBytes = Buffer.byteLength(joined, "utf-8");
   const lines =
     splitLines.length > 0 && splitLines[splitLines.length - 1] === ""
       ? splitLines.slice(0, -1)
       : splitLines;
-  return truncateFromCountingLines(lines, totalBytes, maxLines, maxBytes, joined);
+
+  let totalBytes = options.totalBytes;
+  let underLimitContent = options.underLimitContent;
+  if (totalBytes === undefined || underLimitContent === undefined) {
+    const joined = splitLines.join("\n");
+    if (underLimitContent === undefined) underLimitContent = joined;
+    if (totalBytes === undefined) totalBytes = Buffer.byteLength(joined, "utf-8");
+  }
+
+  return truncateFromCountingLines(lines, totalBytes, maxLines, maxBytes, underLimitContent);
 }
+
+/** Build an under-limit truncation record without splitting or joining. */
+export function underLimitTruncation(content, totalBytes, totalLines) {
+  return {
+    content,
+    truncated: false,
+    truncatedBy: null,
+    totalLines,
+    totalBytes,
+    outputLines: totalLines,
+    outputBytes: totalBytes,
+    lastLinePartial: false,
+    firstLineExceedsLimit: false,
+    maxLines: DEFAULT_MAX_LINES,
+    maxBytes: DEFAULT_MAX_BYTES,
+  };
+}
+
+export { countLinesNoAlloc };
 
 function truncateStringToBytesFromEnd(str, maxBytes) {
   const buf = Buffer.from(str, "utf-8");

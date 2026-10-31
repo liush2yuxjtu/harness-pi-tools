@@ -1,11 +1,11 @@
 # HARNESS PRD · 官方 Pi 基础工具加速（求职作品）
 
-> 状态：FULL 路径已跑完（linux verify PASS；macos SKIP；见 README / results/）  
+> 状态：v0.3.0 已 ship（`valgrind-ir` lab 门禁 PASS）；**下一刀 /goal = Ir hillclimb**（主攻 read/edit/write/truncate）  
 > 日期：2026-10-31（Asia/Taipei）
 
 ## 1. 一句话
 
-钉死官方 `earendil-works/pi`（pi-agent）coding-agent 基础工具为基线，做**可嵌入官方 A/B** 的加速路径；Rust 可选；以 CPU 事件为主指标；未过 `/verify` 不写性能结论；MIT 公开作品集。
+钉死官方 `earendil-works/pi`（pi-agent）coding-agent 基础工具为基线，做**可嵌入官方 A/B** 的加速路径；Rust 可选；以**确定性计数（本机 `valgrind-ir`）**为主指标；未过 `/verify` 不写性能结论；MIT 公开作品集。
 
 ## 2. 目标 / 非目标
 
@@ -27,13 +27,13 @@
 
 | 工具 | 默认开 | 备注 |
 |---|---|---|
-| read | 是 | 默认战场 |
-| bash | 是 | 默认战场；尾部截断 |
-| edit | 是 | 默认战场 |
-| write | 是 | 默认战场 |
-| grep | 是 | v1；底层 `rg` |
-| find | 是 | v1；底层 `fd`（非纯 JS） |
-| ls | 是 | v1 |
+| read | 是 | 默认战场；**本轮 hillclimb 主攻** |
+| bash | 是 | 默认战场；尾部截断；spawn 绑定，非本轮硬目标 |
+| edit | 是 | 默认战场；**本轮 hillclimb 主攻** |
+| write | 是 | 默认战场；**本轮 hillclimb 主攻** |
+| grep | 是 | v1；底层 `rg`；spawn 绑定，非本轮硬目标 |
+| find | 是 | v1；底层 `fd`；spawn 绑定，非本轮硬目标 |
+| ls | 是 | v1；已大胜（Ir ~1.47×），本轮保持 |
 | powershell | 否 | 本阶段不碰 |
 
 共享硬顶（基线）：约 **2000 行 / 50KB**（见 `truncate.ts`）。
@@ -48,10 +48,12 @@
 
 | 指标 | 角色 | 说明 |
 |---|---|---|
-| CPU 事件 / 确定性计数（perf instructions → Valgrind Ir → …） | **主（lab）** | 本机按探测链选取；见 docs/METRICS.md |
-| 墙钟 latency | 次（展示） | 可复现基准；**不当 lab 门** |
+| 确定性计数（探测链：perf instructions → Valgrind Ir → …） | **主（lab）** | 本机选取 **`valgrind-ir`**；见 docs/METRICS.md |
+| 墙钟 latency | 次（展示） | fair A/B 中位；**不当 lab 门** |
 | 峰值 RSS | 必报 | 内存足迹 |
 | 产物体积 | 若有原生二进制则必报 | release 体积 |
+
+**门禁：** verify `count-ratchet` = suite sum `fastCpu <= officialCpu × 1.05` + per-tool `× 1.15`；`wallMs` 不入门。
 
 **禁令：** 未过项目 `/verify` 不得写性能结论；README **只允许实测数字**。
 
@@ -90,3 +92,13 @@ MIT，公开仓库，简历可引用。
 
 1 求职不换 CLI · 2 钉官方 commit · 3 只做工具路径 · 4–5 七工具进 v1 · 6 Rust 可选 · 7 同 schema + 弄清截断 · 8–11 CPU 事件主 + 墙钟/RSS/体积 · 12 禁 unsafe · 13–14 必须 A/B + 允许 standalone · 15–16 fixture + 双平台 · 17–18 verify 门禁 + 实测 README · 19 MIT · 20 **先 PRD + FULL workflow 审批再开工**。
 
+## 12. 下一刀 /goal · Ir hillclimb（v0.3.0 之后）
+
+| 项 | 内容 |
+|---|---|
+| **Goal** | 在保持 parity 的前提下压 **Valgrind Ir**，优先让 `read:small` / `read:boundary-lines` / `edit` / `write` 的 `fastCpu < officialCpu`，并尽量拉开 suite 总和 |
+| **主攻** | `packages/fast-tools` 的 **read / edit / write / truncate** JS 热路径（少 split/join、少冗余 syscall、边界截断不整文件 re-join） |
+| **非本轮硬目标** | `bash` / `grep` / `find`（spawn 绑定 `bash`/`rg`/`fd`，硬压 Ir 收益小）；`ls` 已大胜，只回归不破坏 |
+| **门禁不变** | lab metric = `valgrind-ir`；verify `count-ratchet`（suite×1.05 + tool×1.15）；`wallMs` 仅展示 |
+| **验收** | parity PASS → bench 刷新实测表 → `/verify` PASS → 才允许 commit/push 与更新 README/Page 成绩 |
+| **基线对照（v0.3.0 小套件）** | suite Ir 2.10B→1.99B（1.05×）；ls 1.47×；read/edit/write ≈1.00×（略高，本轮要翻成 fast 更低） |

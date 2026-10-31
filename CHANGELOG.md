@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 — 2026-10-31 (Asia/Taipei)
+
+- **/goal Ir hillclimb:** press Valgrind Ir on JS hot paths (`read` / `edit` / `write` / `truncate`); spawn tools (bash/grep/find) not hard targets this round.
+- Fast `toolRead`: skip `access`; whole-file under byte cap uses one split + `underLimitTruncation` (no `truncateHead` re-split); over-limit uses `truncateHeadFromSplit` with known `totalBytes` / `underLimitContent` (no full join→re-split).
+- Fast `toolWrite`: try `writeFile` first, `mkdir` only on `ENOENT`.
+- Fast `toolEdit`: skip `access(R_OK|W_OK)`.
+- Measured (lab `valgrind-ir`): small suite sum **1.06×** (was 1.05×); `read:boundary-lines` **1.07×**; `read:large-2mb` **2.15×**; large suite sum **1.18×**. `wallMs` display-only; verify count-ratchet unchanged.
+- PRD §12 documents the hillclimb goal.
+
 ## 0.3.0 — 2026-10-31 (Asia/Taipei)
 
 - **Deterministic lab metric:** probe chain perf-instructions → Valgrind cachegrind `Ir` (`--trace-children`, sum summaries, `node --predictable`) → page-faults → soft-cpu-proxy.

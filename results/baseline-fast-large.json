@@ -4,12 +4,12 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "fixture": "/workspace/harness-pi-tools/fixture",
-  "measuredAt": "2026-10-30T23:25:45.169Z",
+  "measuredAt": "2026-10-31T04:11:06.188Z",
   "metric": "valgrind-ir",
   "hw": {
     "available": true,
     "metric": "valgrind-ir",
-    "sample": 94419333,
+    "sample": 94418892,
     "tried": [
       {
         "step": 1,
@@ -66,126 +66,126 @@
       {
         "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
         "ok": true,
-        "detail": "I refs=94419333"
+        "detail": "I refs=94418892"
       }
     ],
     "softProxy": false
   },
-  "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
+  "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "rows": [
     {
       "tool": "read:large-2mb",
       "metric": "valgrind-ir",
-      "cpuEvents": 807616840,
-      "softCpuUs": 9492,
-      "wallMs": 9.112,
-      "peakRssKb": 213424,
+      "cpuEvents": 366472690,
+      "softCpuUs": 3877,
+      "wallMs": 3.909,
+      "peakRssKb": 235760,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 807616840,
-        "min": 807616840,
-        "max": 807616840,
-        "mean": 807616840,
+        "median": 366472690,
+        "min": 366472690,
+        "max": 366472690,
+        "mean": 366472690,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     },
     {
       "tool": "read:near-2000",
       "metric": "valgrind-ir",
-      "cpuEvents": 206198668,
-      "softCpuUs": 1007,
-      "wallMs": 0.314,
-      "peakRssKb": 213424,
+      "cpuEvents": 215053847,
+      "softCpuUs": 648,
+      "wallMs": 0.243,
+      "peakRssKb": 235760,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 206198668,
-        "min": 206198668,
-        "max": 206198668,
-        "mean": 206198668,
+        "median": 215053847,
+        "min": 215053847,
+        "max": 215053847,
+        "mean": 215053847,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     },
     {
       "tool": "read:near-50kb",
       "metric": "valgrind-ir",
-      "cpuEvents": 166287505,
-      "softCpuUs": 620,
-      "wallMs": 0.391,
-      "peakRssKb": 213424,
+      "cpuEvents": 160623007,
+      "softCpuUs": 390,
+      "wallMs": 0.223,
+      "peakRssKb": 235760,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 166287505,
-        "min": 166287505,
-        "max": 166287505,
-        "mean": 166287505,
+        "median": 160623007,
+        "min": 160623007,
+        "max": 160623007,
+        "mean": 160623007,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     },
     {
       "tool": "ls:dir-2k",
       "metric": "valgrind-ir",
-      "cpuEvents": 303268137,
-      "softCpuUs": 1829,
-      "wallMs": 2.135,
-      "peakRssKb": 213424,
+      "cpuEvents": 303783637,
+      "softCpuUs": 1336,
+      "wallMs": 1.093,
+      "peakRssKb": 236240,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 303268137,
-        "min": 303268137,
-        "max": 303268137,
-        "mean": 303268137,
+        "median": 303783637,
+        "min": 303783637,
+        "max": 303783637,
+        "mean": 303783637,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     },
     {
       "tool": "find:dir-2k",
       "metric": "valgrind-ir",
-      "cpuEvents": 511228366,
-      "softCpuUs": 2015,
-      "wallMs": 9.47,
-      "peakRssKb": 213424,
+      "cpuEvents": 510696329,
+      "softCpuUs": 2331,
+      "wallMs": 19.881,
+      "peakRssKb": 235924,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 511228366,
-        "min": 511228366,
-        "max": 511228366,
-        "mean": 511228366,
+        "median": 510696329,
+        "min": 510696329,
+        "max": 510696329,
+        "mean": 510696329,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     },
     {
       "tool": "grep:large-2mb",
       "metric": "valgrind-ir",
-      "cpuEvents": 2110259991,
-      "softCpuUs": 20495,
-      "wallMs": 23.288,
-      "peakRssKb": 253308,
+      "cpuEvents": 2083252096,
+      "softCpuUs": 18887,
+      "wallMs": 23.403,
+      "peakRssKb": 277504,
       "binaryBytes": -1,
       "countStability": {
         "n": 1,
-        "median": 2110259991,
-        "min": 2110259991,
-        "max": 2110259991,
-        "mean": 2110259991,
+        "median": 2083252096,
+        "min": 2083252096,
+        "max": 2083252096,
+        "mean": 2083252096,
         "cv": 0
       },
-      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=7 irRounds=12",
-      "notes": "metric=valgrind-ir; sampleIr=94419333; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
+      "env": "Linux 6.12.94+ x64 nodev24.22.1 wallRounds=15 irRounds=12",
+      "notes": "metric=valgrind-ir; sampleIr=94418892; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate); irRounds=12 (1 warmup + N in worker)"
     }
   ]
 }

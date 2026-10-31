@@ -68,3 +68,7 @@ Valgrind Ir is slow (full process instrumentation + `--trace-children=yes`). `ir
 ## Suites
 
 Large fixtures: `node fixture/generate-large.mjs` (gitignored payloads).
+
+## Hillclimb note (v0.3.1)
+
+Next lab goal after v0.3.0: lower Ir on **read/edit/write/truncate** while keeping parity. Spawn-bound bash/grep/find are intentionally not hard targets. Gate remains `valgrind-ir` + count-ratchet; `wallMs` display-only. See `PRD.md` §12.

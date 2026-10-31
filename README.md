@@ -2,7 +2,7 @@
 
 Accelerate official Pi (`earendil-works/pi`) coding-agent base tools for a portfolio A/B demo.
 
-**Status:** verify PASS · parity PASS · pin `86dc686cf2fd795b2b24af3d614bb0e1307bcd76` · v0.3.0
+**Status:** verify PASS · parity PASS · pin `86dc686cf2fd795b2b24af3d614bb0e1307bcd76` · v0.3.1 (Ir hillclimb)
 
 License: MIT
 
@@ -25,40 +25,40 @@ This box: no `cpu` PMU → HW instructions SKIP; **Valgrind Ir wins**.
 ### Small suite — `results/bench-linux.json`
 
 Env: `Linux 6.12.94+ x64 nodev24.22.1 rounds=21 irRounds=20 paired=in-process+valgrind-ir`  
-Measured at: `2026-10-30T23:16:45.558Z` (UTC in file; Asia/Taipei = +8)  
-Suite Ir sum: official `2095161614` → fast `1989310680` (**1.05×**, fast lower)
+Measured at: `2026-10-31T04:04:39.721Z` (UTC in file; Asia/Taipei = +8)  
+Suite Ir sum: official `2104046153` → fast `1985855823` (**1.06×**, fast lower)
 
 | tool | officialCpu (Ir) | fastCpu (Ir) | officialSoftCpuUs | fastSoftCpuUs | officialWallMs | fastWallMs | Ir ratio (off/fast) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| read:small | 137656353 | 137813988 | 58 | 49 | 0.046 | 0.044 | 1.00x |
-| read:boundary-lines | 248813287 | 249272656 | 453 | 392 | 0.369 | 0.391 | 1.00x |
-| bash | 346867643 | 346575914 | 2210 | 2390 | 5.552 | 6.394 | 1.00x |
-| edit | 144861753 | 145085770 | 384 | 291 | 0.234 | 0.222 | 1.00x |
-| write | 136729135 | 136947212 | 91 | 106 | 0.073 | 0.074 | 1.00x |
-| grep | 411525990 | 411165097 | 1714 | 1771 | 6.074 | 6.214 | 1.00x |
-| find | 345961586 | 342993299 | 1816 | 1811 | 9.712 | 10.614 | 1.01x |
-| ls | 322745867 | 219456744 | 2053 | 183 | 2.581 | 0.148 | 1.47x |
+| read:small | 137674907 | 136636850 | 110 | 89 | 0.075 | 0.062 | 1.01x |
+| read:boundary-lines | 248848007 | 233314714 | 365 | 302 | 0.360 | 0.280 | 1.07x |
+| bash | 346495005 | 345795212 | 2085 | 2344 | 4.515 | 4.221 | 1.00x |
+| edit | 144930984 | 144818863 | 240 | 340 | 0.203 | 0.195 | 1.00x |
+| write | 136770752 | 136438154 | 144 | 114 | 0.106 | 0.077 | 1.00x |
+| grep | 414391247 | 414592275 | 1765 | 1689 | 5.586 | 5.655 | 1.00x |
+| find | 352211654 | 354538400 | 2922 | 2973 | 33.028 | 35.408 | 0.99x |
+| ls | 322723597 | 219721355 | 1348 | 158 | 1.326 | 0.136 | 1.47x |
 
-Honest notes: `ls` is the primary Ir/wall win (~1.47× Ir, ~17× wall). Tiny tools are near-parity on Ir (Node startup dominates). Spawn-bound bash/grep/find stay close on Ir.
+Honest notes: `ls` remains the primary small-suite Ir/wall win (~1.47× Ir). v0.3.1 hillclimb flips `read:small` / `read:boundary-lines` / `edit` / `write` to `fastCpu < officialCpu` (boundary ~1.07×). Spawn-bound bash/grep/find stay near parity (not this round’s hard target).
 
 ### Large suite — `results/bench-linux-large.json`
 
 Env: `Linux 6.12.94+ x64 nodev24.22.1 rounds=11 irRounds=12 paired=in-process+valgrind-ir`  
-Measured at: `2026-10-30T23:22:48.652Z` (UTC in file; Asia/Taipei = +8)  
-Suite Ir sum: official `4342796776` → fast `4109112307` (**1.06×**)
+Measured at: `2026-10-31T04:07:47.703Z` (UTC in file; Asia/Taipei = +8)  
+Suite Ir sum: official `4311167430` → fast `3650440477` (**1.18×**)
 
 Generate once: `node fixture/generate-large.mjs` (payloads gitignored).
 
 | tool | officialCpu (Ir) | fastCpu (Ir) | officialSoftCpuUs | fastSoftCpuUs | officialWallMs | fastWallMs | Ir ratio (off/fast) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| read:large-2mb | 823042490 | 805982855 | 11141 | 6934 | 11.513 | 8.031 | 1.02x |
-| read:near-2000 | 205857037 | 206187578 | 363 | 422 | 0.324 | 0.408 | 1.00x |
-| read:near-50kb | 168863864 | 166279906 | 239 | 242 | 0.186 | 0.177 | 1.02x |
-| ls:dir-2k | 543386389 | 303264046 | 10161 | 1151 | 15.308 | 1.018 | 1.79x |
-| find:dir-2k | 472996205 | 507217072 | 2391 | 5177 | 11.361 | 13.467 | 0.93x |
-| grep:large-2mb | 2128650791 | 2120180850 | 16570 | 15765 | 18.882 | 18.69 | 1.00x |
+| read:large-2mb | 794095075 | 369493161 | 9760 | 4539 | 17.870 | 9.676 | 2.15x |
+| read:near-2000 | 205870671 | 196205522 | 377 | 332 | 0.316 | 0.241 | 1.05x |
+| read:near-50kb | 168892351 | 160155664 | 424 | 154 | 0.202 | 0.139 | 1.05x |
+| ls:dir-2k | 544637418 | 303353928 | 8026 | 1299 | 8.088 | 0.994 | 1.80x |
+| find:dir-2k | 473426124 | 514464634 | 2827 | 3200 | 9.979 | 11.903 | 0.92x |
+| grep:large-2mb | 2124245791 | 2106767568 | 17489 | 16782 | 41.848 | 32.155 | 1.01x |
 
-Honest notes: `ls:dir-2k` is the large-suite hero (~1.79× Ir). `find:dir-2k` is slightly worse on Ir on this run (within per-tool ×1.15 ceiling); suite sum still improves.
+Honest notes: **`read:large-2mb` is the v0.3.1 hero (~2.15× Ir)** via no join→re-split truncate. `ls:dir-2k` still ~1.80×. `find:dir-2k` slightly worse on Ir (within per-tool ×1.15); suite sum still improves a lot.
 
 ### macos
 
@@ -98,7 +98,7 @@ Details: `docs/ADAPTER.md`.
 - `docs/ADAPTER.md` — embed + standalone
 - `docs/AUDIT-truncation.md` — 2000/50KB
 - `docs/METRICS.md` — probe chain, Ir, ceilings, wallMs role
-- `PRD.md` — product brief
+- `PRD.md` — product brief (+ §12 Ir hillclimb goal)
 
 ## Fixture
 

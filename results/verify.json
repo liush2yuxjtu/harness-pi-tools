@@ -69,10 +69,10 @@
     {
       "name": "count-ratchet",
       "status": "PASS",
-      "detail": "metric=valgrind-ir; suiteSum fast=1989310680 official=2095161614 limit=2199919695 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
+      "detail": "metric=valgrind-ir; suiteSum fast=1985855823 official=2104046153 limit=2209248461 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
     }
   ],
-  "at": "2026-10-30T23:25:59.947Z",
+  "at": "2026-10-31T04:11:24.533Z",
   "countCeiling": 1.05,
   "countToolCeiling": 1.15
 }
