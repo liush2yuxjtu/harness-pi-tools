@@ -2,7 +2,7 @@
 
 Accelerate official Pi (`earendil-works/pi`) coding-agent base tools for a portfolio A/B demo.
 
-**Status:** verify PASS · parity PASS · pin `86dc686cf2fd795b2b24af3d614bb0e1307bcd76` · v0.3.1 (Ir hillclimb)
+**Status:** verify PASS · parity PASS · pin `86dc686cf2fd795b2b24af3d614bb0e1307bcd76` · v0.3.2 (Ir hillclimb)
 
 License: MIT
 
@@ -25,21 +25,22 @@ This box: no `cpu` PMU → HW instructions SKIP; **Valgrind Ir wins**.
 ### Small suite — `results/bench-linux.json`
 
 Env: `Linux 6.12.94+ x64 nodev24.22.1 rounds=21 irRounds=20 paired=in-process+valgrind-ir`  
-Measured at: `2026-10-31T04:04:39.721Z` (UTC in file; Asia/Taipei = +8)  
-Suite Ir sum: official `2104046153` → fast `1985855823` (**1.06×**, fast lower)
+Measured at: `2026-10-31T04:19:21.113Z` (UTC in file; Asia/Shanghai = +8 → 2026-10-31 12:19 CST)  
+Suite Ir sum: official `2111772714` → fast `1926290642` (**1.10×**, fast lower)
 
 | tool | officialCpu (Ir) | fastCpu (Ir) | officialSoftCpuUs | fastSoftCpuUs | officialWallMs | fastWallMs | Ir ratio (off/fast) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| read:small | 137674907 | 136636850 | 110 | 89 | 0.075 | 0.062 | 1.01x |
-| read:boundary-lines | 248848007 | 233314714 | 365 | 302 | 0.360 | 0.280 | 1.07x |
-| bash | 346495005 | 345795212 | 2085 | 2344 | 4.515 | 4.221 | 1.00x |
-| edit | 144930984 | 144818863 | 240 | 340 | 0.203 | 0.195 | 1.00x |
-| write | 136770752 | 136438154 | 144 | 114 | 0.106 | 0.077 | 1.00x |
-| grep | 414391247 | 414592275 | 1765 | 1689 | 5.586 | 5.655 | 1.00x |
-| find | 352211654 | 354538400 | 2922 | 2973 | 33.028 | 35.408 | 0.99x |
-| ls | 322723597 | 219721355 | 1348 | 158 | 1.326 | 0.136 | 1.47x |
+| read:small | 137650294 | 137177729 | 123 | 86 | 0.098 | 0.073 | 1.00x |
+| read:boundary-lines | 248794879 | 173393374 | 553 | 325 | 0.456 | 0.237 | 1.43x |
+| bash | 346729496 | 346265783 | 2033 | 2429 | 4.706 | 4.702 | 1.00x |
+| edit | 144904206 | 144773206 | 444 | 276 | 0.27 | 0.256 | 1.00x |
+| write | 136767128 | 136428926 | 96 | 102 | 0.086 | 0.08 | 1.00x |
+| grep | 418647482 | 418994007 | 1667 | 1778 | 5.806 | 5.959 | 1.00x |
+| find | 354847535 | 349362206 | 1722 | 1782 | 9.155 | 9.305 | 1.02x |
+| ls | 323431694 | 219895411 | 1830 | 191 | 1.779 | 0.126 | 1.47x |
 
-Honest notes: `ls` remains the primary small-suite Ir/wall win (~1.47× Ir). v0.3.1 hillclimb flips `read:small` / `read:boundary-lines` / `edit` / `write` to `fastCpu < officialCpu` (boundary ~1.07×). Spawn-bound bash/grep/find stay near parity (not this round’s hard target).
+Honest notes: `ls` remains the primary small-suite wall win (~1.47× Ir). v0.3.2 hillclimb: `read:boundary-lines` **1.43×** (line-only truncate skips per-line `Buffer.byteLength`); `read:small` / `edit` / `write` all `fastCpu < officialCpu`. Spawn-bound bash/grep/find stay near parity (not this round’s hard target).
+
 
 ### Large suite — `results/bench-linux-large.json`
 

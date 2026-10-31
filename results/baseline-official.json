@@ -4,12 +4,12 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "fixture": "/workspace/harness-pi-tools/fixture",
-  "measuredAt": "2026-10-31T04:09:42.295Z",
+  "measuredAt": "2026-10-31T04:19:21.113Z",
   "metric": "valgrind-ir",
   "hw": {
     "available": true,
     "metric": "valgrind-ir",
-    "sample": 94418459,
+    "sample": 94419240,
     "tried": [
       {
         "step": 1,
@@ -66,7 +66,7 @@
       {
         "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
         "ok": true,
-        "detail": "I refs=94418459"
+        "detail": "I refs=94419240"
       }
     ],
     "softProxy": false
@@ -76,9 +76,9 @@
     {
       "tool": "read:small",
       "metric": "valgrind-ir",
-      "cpuEvents": 137639144,
-      "softCpuUs": 109,
-      "wallMs": 0.072,
+      "cpuEvents": 137650294,
+      "softCpuUs": 123,
+      "wallMs": 0.098,
       "peakRssKb": 176012,
       "binaryBytes": -1,
       "countStability": {
@@ -95,9 +95,9 @@
     {
       "tool": "read:boundary-lines",
       "metric": "valgrind-ir",
-      "cpuEvents": 248815700,
-      "softCpuUs": 698,
-      "wallMs": 0.431,
+      "cpuEvents": 248794879,
+      "softCpuUs": 553,
+      "wallMs": 0.456,
       "peakRssKb": 184276,
       "binaryBytes": -1,
       "countStability": {
@@ -114,9 +114,9 @@
     {
       "tool": "bash",
       "metric": "valgrind-ir",
-      "cpuEvents": 346335288,
-      "softCpuUs": 1854,
-      "wallMs": 5.184,
+      "cpuEvents": 346729496,
+      "softCpuUs": 2033,
+      "wallMs": 4.706,
       "peakRssKb": 190288,
       "binaryBytes": -1,
       "countStability": {
@@ -133,9 +133,9 @@
     {
       "tool": "edit",
       "metric": "valgrind-ir",
-      "cpuEvents": 144930763,
-      "softCpuUs": 290,
-      "wallMs": 0.339,
+      "cpuEvents": 144904206,
+      "softCpuUs": 444,
+      "wallMs": 0.27,
       "peakRssKb": 310136,
       "binaryBytes": -1,
       "countStability": {
@@ -152,9 +152,9 @@
     {
       "tool": "write",
       "metric": "valgrind-ir",
-      "cpuEvents": 136769470,
-      "softCpuUs": 135,
-      "wallMs": 0.104,
+      "cpuEvents": 136767128,
+      "softCpuUs": 96,
+      "wallMs": 0.086,
       "peakRssKb": 312268,
       "binaryBytes": -1,
       "countStability": {
@@ -171,9 +171,9 @@
     {
       "tool": "grep",
       "metric": "valgrind-ir",
-      "cpuEvents": 418190504,
-      "softCpuUs": 2079,
-      "wallMs": 6.476,
+      "cpuEvents": 418647482,
+      "softCpuUs": 1667,
+      "wallMs": 5.806,
       "peakRssKb": 312268,
       "binaryBytes": -1,
       "countStability": {
@@ -190,9 +190,9 @@
     {
       "tool": "find",
       "metric": "valgrind-ir",
-      "cpuEvents": 346545916,
-      "softCpuUs": 2090,
-      "wallMs": 7.255,
+      "cpuEvents": 354847535,
+      "softCpuUs": 1722,
+      "wallMs": 9.155,
       "peakRssKb": 312480,
       "binaryBytes": -1,
       "countStability": {
@@ -209,9 +209,9 @@
     {
       "tool": "ls",
       "metric": "valgrind-ir",
-      "cpuEvents": 323384718,
-      "softCpuUs": 2127,
-      "wallMs": 1.882,
+      "cpuEvents": 323431694,
+      "softCpuUs": 1830,
+      "wallMs": 1.779,
       "peakRssKb": 315236,
       "binaryBytes": -1,
       "countStability": {

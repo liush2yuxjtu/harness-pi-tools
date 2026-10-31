@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 — 2026-10-31 (Asia/Shanghai)
+
+- Ir hillclimb deepen: `truncateFromCountingLines` line-only path (under byte cap) skips per-line `Buffer.byteLength` — `read:boundary-lines` **1.43×**.
+- Fast `toolEdit`: `Buffer→toString` (not `readFile` utf-8 option) + `lastIndexOf` uniqueness check (lower Valgrind Ir).
+- Measured small suite sum **1.10×** (official `2111772714` → fast `1926290642`); all four targets `read:small` / `read:boundary-lines` / `edit` / `write` have `fastCpu < officialCpu`. `ls` ~1.47× kept.
+
 ## 0.3.1 — 2026-10-31 (Asia/Taipei)
 
 - **/goal Ir hillclimb:** press Valgrind Ir on JS hot paths (`read` / `edit` / `write` / `truncate`); spawn tools (bash/grep/find) not hard targets this round.

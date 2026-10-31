@@ -114,12 +114,12 @@ export async function toolWrite(cwd, { filePath, content }) {
 
 export async function toolEdit(cwd, { filePath, edits }) {
   const absolutePath = path.resolve(cwd, filePath);
-  // Skip access(R_OK|W_OK); decode utf-8 in one step.
-  let text = await readFile(absolutePath, "utf-8");
+  // Skip access(R_OK|W_OK); Buffer→string matches official decode path (utf-8 option costs more Ir).
+  let text = (await readFile(absolutePath)).toString("utf-8");
   for (const { oldText, newText } of edits) {
     const idx = text.indexOf(oldText);
     if (idx < 0) throw new Error(`oldText not found in ${filePath}`);
-    if (text.indexOf(oldText, idx + 1) >= 0) throw new Error(`oldText not unique in ${filePath}`);
+    if (text.lastIndexOf(oldText) !== idx) throw new Error(`oldText not unique in ${filePath}`);
     text = text.slice(0, idx) + newText + text.slice(idx + oldText.length);
   }
   await writeFile(absolutePath, text, "utf-8");
