@@ -229,7 +229,7 @@ export function probeDeterministicMetric() {
 /**
  * Run a worker under Valgrind cachegrind; return Ir (median of repeats).
  */
-export function measureValgrindIr({ workerPath, workerArgs = [], repeats = 1, timeoutMs = 300000 }) {
+export function measureValgrindIr({ workerPath, workerArgs = [], repeats = 1, timeoutMs = 300000, directBinary = false }) {
   const vg = which("valgrind");
   if (!vg) throw new Error("valgrind missing");
   const nodeBin = resolveNodeBin();
@@ -238,19 +238,30 @@ export function measureValgrindIr({ workerPath, workerArgs = [], repeats = 1, ti
     const tmp = mkdtempSync(path.join(osTmp(), "harness-cg-"));
     try {
       const outPat = path.join(tmp, "cg-%p.out");
+      const argv = directBinary
+        ? [
+            "--tool=cachegrind",
+            "--cache-sim=no",
+            "--branch-sim=no",
+            "--trace-children=yes",
+            `--cachegrind-out-file=${outPat}`,
+            workerPath,
+            ...workerArgs,
+          ]
+        : [
+            "--tool=cachegrind",
+            "--cache-sim=no",
+            "--branch-sim=no",
+            "--trace-children=yes",
+            `--cachegrind-out-file=${outPat}`,
+            nodeBin,
+            "--predictable",
+            workerPath,
+            ...workerArgs,
+          ];
       const r = spawnSync(
         vg,
-        [
-          "--tool=cachegrind",
-          "--cache-sim=no",
-          "--branch-sim=no",
-          "--trace-children=yes",
-          `--cachegrind-out-file=${outPat}`,
-          nodeBin,
-          "--predictable",
-          workerPath,
-          ...workerArgs,
-        ],
+        argv,
         {
           encoding: "utf8",
           timeout: timeoutMs,

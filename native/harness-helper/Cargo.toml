@@ -1,0 +1,16 @@
+[package]
+name = "harness-helper"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Native Ir worker + tool helper for HARNESS fast path (forbidUnsafe)"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"
+
+[[bin]]
+name = "harness-helper"
+path = "src/main.rs"

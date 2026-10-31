@@ -42,6 +42,11 @@
       "detail": "present"
     },
     {
+      "name": "docs/ADR-0003-native-ir-worker.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
       "name": "docs/ADAPTER.md",
       "status": "PASS",
       "detail": "present"
@@ -59,7 +64,7 @@
     {
       "name": "forbid-unsafe",
       "status": "PASS",
-      "detail": "no unsafe keyword under native/packages"
+      "detail": "no unsafe blocks under native/packages (forbid(unsafe_code) OK)"
     },
     {
       "name": "fd-available",
@@ -74,10 +79,10 @@
     {
       "name": "count-ratchet",
       "status": "PASS",
-      "detail": "metric=valgrind-ir; suiteSum fast=1844060000 official=2103797663 limit=2208987546 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
+      "detail": "metric=valgrind-ir; suiteSum fast=429680804 official=2111834999 limit=2217426749 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
     }
   ],
-  "at": "2026-10-31T05:14:51.861Z",
+  "at": "2026-10-31T06:12:52.225Z",
   "countCeiling": 1.05,
   "countToolCeiling": 1.15
 }

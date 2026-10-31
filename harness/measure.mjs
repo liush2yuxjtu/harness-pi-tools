@@ -12,6 +12,7 @@ process.env.PATH = join(dirname(__fu(import.meta.url)), "..", "bin") + ":" + (pr
  */
 import { performance } from "perf_hooks";
 import { writeFile, mkdir, copyFile, access } from "fs/promises";
+import { existsSync } from "fs";
 import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -28,6 +29,7 @@ const HARNESS_ROOT = path.resolve(__dirname, "..");
 const FIXTURE = path.join(HARNESS_ROOT, "fixture");
 const RESULTS = path.join(HARNESS_ROOT, "results");
 const IR_WORKER = path.join(HARNESS_ROOT, "harness", "ir-worker.mjs");
+const NATIVE_HELPER = path.join(HARNESS_ROOT, "bin", "harness-helper");
 
 const argv = process.argv.slice(2);
 const mode = argv.find((a) => a === "official" || a === "fast") || "official";
@@ -161,14 +163,22 @@ for (const [name, fn] of Object.entries(scenarios)) {
     let countNotes = hw.notes;
 
     if (hw.metric === "valgrind-ir") {
-      const ir = measureValgrindIr({
-        workerPath: IR_WORKER,
-        workerArgs: [mode, name, String(irRounds)],
-        repeats: 1,
-      });
+      const useNative = mode === "fast" && existsSync(NATIVE_HELPER);
+      const ir = useNative
+        ? measureValgrindIr({
+            workerPath: NATIVE_HELPER,
+            workerArgs: ["ir-worker", name, String(irRounds)],
+            repeats: 1,
+            directBinary: true,
+          })
+        : measureValgrindIr({
+            workerPath: IR_WORKER,
+            workerArgs: [mode, name, String(irRounds)],
+            repeats: 1,
+          });
       cpuEvents = ir.ir;
       countStability = ir.stability;
-      countNotes = `${hw.notes}; irRounds=${irRounds} (1 warmup + N in worker)`;
+      countNotes = `${hw.notes}; irRounds=${irRounds} (1 warmup + N in worker)${useNative ? "; native-fast-ir" : ""}`;
     } else if (hw.metric === "soft-cpu-proxy" || hw.metric === "page-faults") {
       // page-faults path still uses softCpu as ratchetable lab count unless we add pe wrapping later
       const soft = await measureSoftCpuProxy(fn, wallRounds);

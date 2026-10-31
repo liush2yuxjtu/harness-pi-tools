@@ -73,4 +73,9 @@ Large fixtures: `node fixture/generate-large.mjs` (gitignored payloads).
 
 Next lab goal after v0.3.0: lower Ir on **read/edit/write/truncate** while keeping parity. Spawn-bound bash/grep/find are intentionally not hard targets. Gate remains `valgrind-ir` + count-ratchet; `wallMs` display-only. See `PRD.md` §12.
 
-§12.1 shipped in v0.3.2 (`e610ec8`). §12.3 shipped in v0.3.3: persistent session + in-process grep/find **rejected** under Valgrind Ir (see ADR-0002); bash `truncateTail` line-scan + grep/find post-process shipped. Gate unchanged.
+§12.1 shipped in v0.3.2 (`e610ec8`). §12.3 shipped in v0.3.3: persistent session + in-process grep/find **rejected** under Valgrind Ir (see ADR-0002); bash `truncateTail` line-scan + grep/find post-process shipped. §12.4 shipped in v0.3.4: native Ir worker (ADR-0003); small suite all ≥2× Ir. Gate unchanged.
+
+## Native Ir worker (v0.3.4 / ADR-0003)
+
+When `bin/harness-helper` is present, the lab **fast** Valgrind path may use **`native-fast-ir`**: run `harness-helper ir-worker <scenario> <rounds>` under cachegrind (no Node). Official Ir still uses `node --predictable harness/ir-worker.mjs`. SoftCpu/wall stay in-process (native `serve` helper or JS). See `docs/ADR-0003-native-ir-worker.md`. Gate unchanged (`valgrind-ir` + count-ratchet; wall not gated).
+

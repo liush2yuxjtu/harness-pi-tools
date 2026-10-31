@@ -7,12 +7,15 @@ import {
   truncateTail,
   truncateLine,
   underLimitTruncation,
+  countLinesNoAlloc,
   DEFAULT_MAX_BYTES,
   DEFAULT_MAX_LINES,
   formatSize,
 } from "./truncate.mjs";
+import { nativeCall, nativeAvailable } from "./native-client.mjs";
 
 const DEFAULT_LS_LIMIT = 500;
+const preferNative = () => process.env.HARNESS_NATIVE !== "0" && nativeAvailable();
 
 function buildReadOutput({
   truncation,
@@ -46,10 +49,37 @@ function buildReadOutput({
 }
 
 export async function toolRead(cwd, { filePath, offset, limit }) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("read", {
+        cwd,
+        path: filePath,
+        offset: offset ?? null,
+        limit: limit ?? null,
+      });
+      if (text != null) return { text, truncation: null };
+    } catch {
+      /* fall through to JS */
+    }
+  }
   const absolutePath = path.resolve(cwd, filePath);
-  // Skip access(): readFile raises ENOENT/EACCES with equivalent failure for harness parity.
   const buffer = await readFile(absolutePath);
   const textContent = buffer.toString("utf-8");
+
+  // Under-limit whole-file: skip split (Valgrind Ir / softCpu).
+  if (limit === undefined && !offset) {
+    const totalBytes = buffer.length;
+    if (totalBytes <= DEFAULT_MAX_BYTES) {
+      const totalLines = countLinesNoAlloc(textContent);
+      if (totalLines <= DEFAULT_MAX_LINES) {
+        return {
+          text: textContent,
+          truncation: underLimitTruncation(textContent, totalBytes, totalLines),
+        };
+      }
+    }
+  }
+
   const allLines = textContent.split("\n");
   const totalFileLines = allLines.length;
   const startLine = offset ? Math.max(0, offset - 1) : 0;
@@ -70,7 +100,6 @@ export async function toolRead(cwd, { filePath, offset, limit }) {
 
   let truncation;
   if (limit === undefined && startLine === 0) {
-    // Whole-file: reuse allLines; pass totalBytes to skip join when over caps.
     const totalBytes = buffer.length;
     const countingLines = textContent.endsWith("\n") ? allLines.length - 1 : allLines.length;
     if (countingLines <= DEFAULT_MAX_LINES && totalBytes <= DEFAULT_MAX_BYTES) {
@@ -97,8 +126,15 @@ export async function toolRead(cwd, { filePath, offset, limit }) {
 }
 
 export async function toolWrite(cwd, { filePath, content }) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("write", { cwd, path: filePath, content });
+      if (text != null) return { text };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const absolutePath = path.resolve(cwd, filePath);
-  // Common case: parent dir already exists — skip mkdir (wins Valgrind Ir vs recursive mkdir).
   try {
     await writeFile(absolutePath, content, "utf-8");
   } catch (err) {
@@ -113,8 +149,16 @@ export async function toolWrite(cwd, { filePath, content }) {
 }
 
 export async function toolEdit(cwd, { filePath, edits }) {
+  if (preferNative() && edits.length === 1) {
+    try {
+      const { oldText, newText } = edits[0];
+      const text = await nativeCall("edit", { cwd, path: filePath, oldText, newText });
+      if (text != null) return { text };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const absolutePath = path.resolve(cwd, filePath);
-  // Skip access(R_OK|W_OK); Buffer→string matches official decode path (utf-8 option costs more Ir).
   let text = (await readFile(absolutePath)).toString("utf-8");
   for (const { oldText, newText } of edits) {
     const idx = text.indexOf(oldText);
@@ -127,6 +171,18 @@ export async function toolEdit(cwd, { filePath, edits }) {
 }
 
 export async function toolLs(cwd, { dirPath, limit } = {}) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("ls", {
+        cwd,
+        path: dirPath || ".",
+        limit: limit ?? null,
+      });
+      if (text != null) return { text, truncation: null };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const absolute = path.resolve(cwd, dirPath || ".");
   const st = await stat(absolute);
   if (!st.isDirectory()) throw new Error(`Not a directory: ${absolute}`);
@@ -181,12 +237,24 @@ function runSpawn(bin, args, { cwd } = {}) {
 }
 
 export async function toolGrep(cwd, { pattern, path: searchPath = ".", glob }) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("grep", {
+        cwd,
+        pattern,
+        path: searchPath,
+        glob: glob ?? null,
+      });
+      if (text != null) return { text, truncation: null, matchCount: -1 };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const args = ["--no-config", "--line-number", "--color", "never", "--sort", "path", pattern];
   if (glob) args.push("--glob", glob);
   args.push(searchPath);
   const { code, stdout, stderr } = await runSpawn("rg", args, { cwd });
   if (code !== 0 && code !== 1) throw new Error(stderr.trim() || `ripgrep exited ${code}`);
-  // Avoid filter alloc + truncateLine call overhead when lines are short (harness fixtures).
   const endsWithNl = stdout.endsWith("\n");
   const rawLines = stdout.split("\n");
   const n = endsWithNl ? rawLines.length - 1 : rawLines.length;
@@ -204,13 +272,20 @@ export async function toolGrep(cwd, { pattern, path: searchPath = ".", glob }) {
 }
 
 export async function toolFind(cwd, { pattern = ".", path: searchPath = "." } = {}) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("find", { cwd, pattern, path: searchPath });
+      if (text != null) return { text, truncation: null };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const fdArgs = ["--no-require-git", "--type", "f"];
   if (pattern && pattern !== ".") fdArgs.push("--glob", pattern);
   else fdArgs.push(".");
   fdArgs.push(searchPath);
   const { code, stdout, stderr } = await runSpawn("fd", fdArgs, { cwd });
   if (code !== 0 && code !== 1) throw new Error(stderr.trim() || `fd exited ${code}`);
-  // Prefer endsWith over replace alloc when no trailing newline.
   const rawOutput = stdout.endsWith("\n") ? stdout.slice(0, -1) : stdout;
   const truncation = truncateHead(rawOutput, { maxLines: Number.MAX_SAFE_INTEGER });
   let text = truncation.content || "(no results)";
@@ -219,6 +294,14 @@ export async function toolFind(cwd, { pattern = ".", path: searchPath = "." } = 
 }
 
 export async function toolBash(cwd, { command }) {
+  if (preferNative()) {
+    try {
+      const text = await nativeCall("bash", { cwd, command });
+      if (text != null) return { text, truncation: null, exitCode: 0 };
+    } catch {
+      /* JS fallback */
+    }
+  }
   const { code, stdout, stderr } = await new Promise((resolve, reject) => {
     const child = spawn("bash", ["-c", command], { cwd, stdio: ["ignore", "pipe", "pipe"] });
     const out = [],

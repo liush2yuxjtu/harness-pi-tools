@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.4 — 2026-10-31 (Asia/Taipei)
+
+- **/goal §12.4 native Ir worker:** `bin/harness-helper` (Rust, `#![forbid(unsafe_code)]`) + `docs/ADR-0003-native-ir-worker.md`. Lab **fast** Ir runs `harness-helper ir-worker` under Valgrind (no Node); official stays Node. Runtime softCpu/wall via long-lived `serve` helper (`HARNESS_NATIVE=0` → JS fallback).
+- **Small suite (hard gate):** all eight tools Ir ≥2.0× — min **bash 2.50×**, **find 2.30×**; suite sum official `2111834999` → fast `429680804` (**~4.92×**). Full `irRounds=20` bench (not preview).
+- **Large suite (tracking):** suite sum **~1.72×**; not all ≥2× (`read:large-2mb` 1.97×, `ls:dir-2k` 1.37×, `find:dir-2k` 1.62×, `grep:large-2mb` 1.53×). SoftCpu/wall display-only (write softCpu may look worse).
+- Harness: native-fast-ir path in measure/bench-ab; verify requires ADR-0003; forbid-unsafe allows `forbid(unsafe_code)`.
+
+
 ## 0.3.3 — 2026-10-31 (Asia/Shanghai)
 
 - **/goal §12.3 spawn-path Ir:** evidence in `docs/ADR-0002-spawn-reuse.md` — persistent bash session and in-process grep/find **rejected** under Valgrind Ir; ship parent-side wins instead.

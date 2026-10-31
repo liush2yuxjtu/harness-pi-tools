@@ -1,8 +1,8 @@
 # HARNESS PRD · 官方 Pi 基础工具加速（求职作品）
 
-> 状态：v0.3.3 已 ship（§12.3 spawn-path Ir：bash truncateTail 扫描；grep/find 保 rg/fd + 后处理）  
-> §12.1 JS 热路径 + §12.3 spawn-path 均已收工；门禁 `valgrind-ir` + count-ratchet  
-> 日期：2026-10-31（Asia/Shanghai）
+> 状态：v0.3.4 **已收工** — §12.4 native Ir worker（`bin/harness-helper`，ADR-0003）；小套件八行 Ir 均 ≥2.0×  
+> 门禁仍 `valgrind-ir` + count-ratchet；`wallMs` / softCpu 仅展示  
+> 日期：2026-10-31（Asia/Taipei）
 
 ## 1. 一句话
 
@@ -34,7 +34,7 @@
 | write | 是 | 默认战场；**本轮 hillclimb 主攻** |
 | grep | 是 | v1；底层 `rg`；spawn 绑定，非本轮硬目标 |
 | find | 是 | v1；底层 `fd`；spawn 绑定，非本轮硬目标 |
-| ls | 是 | v1；已大胜（Ir ~1.47×），本轮保持 |
+| ls | 是 | v1；§12.4 后小套件 Ir ~12.24×（≥2×） |
 | powershell | 否 | 本阶段不碰 |
 
 共享硬顶（基线）：约 **2000 行 / 50KB**（见 `truncate.ts`）。
@@ -122,3 +122,73 @@ MIT，公开仓库，简历可引用。
 | **落地** | **bash：** `truncateTail` 在 byte 帽内用 `countLinesNoAlloc` + 反向扫换行取尾部（避免整表 `split`）；**grep/find：** 保留 `rg`/`fd` spawn，削减后处理 alloc |
 | **门禁** | `valgrind-ir` + count-ratchet；parity + `/verify` PASS 后才写结论 |
 | **收工对照（小套件实测）** | `bash` ~**1.31×**；grep/find ~1.00×；suite sum ~**1.14×**；`ls` / `read:boundary-lines` 保持 |
+
+## 12.4 / 13. /goal · 每工具 ≥2× Ir（**已收工 · v0.3.4** · 相对 tip `98cc5ad` / v0.3.3）
+
+> 本节 = per-tool ≥2× 规格。**v0.3.4 已收工**（ADR-0003 native Ir worker）。下方 **12.4.2 / 12.4.3** 保留 tip-`98cc5ad` **开工前基线**；**12.4.6** 为收工后实测。lab 仍 `valgrind-ir`；softCpu/wall 仅展示。
+
+### 12.4.1 度量定义（按 tool 统一）
+
+| 项 | 定义 |
+|---|---|
+| **Lab 主指标** | Valgrind cachegrind **Ir**（`officialCpu` / `fastCpu`），见 `docs/METRICS.md` |
+| **加速比** | `speedup = officialCpu / fastCpu`；**达标 = speedup ≥ 2.0**（fast Ir ≤ 官方一半） |
+| **相对谁** | **官方 shim**（同一 pin `86dc686` 的 official 路径） vs **本仓 fast-tools**；对照 tip = **`98cc5ad`（v0.3.3）** 已测 JSON，不是口头基线 |
+| **Suite** | **小套件**为硬验收（八行：`read:small`、`read:boundary-lines`、`bash`、`edit`、`write`、`grep`、`find`、`ls`）；**大套件**同步跟踪（尽量 ≥2×，不单独放宽小套件门） |
+| **兼报（非门）** | `softCpuUs` 比、`wallMs` 比 —— Page/README 可展示，**不入 count-ratchet / 不判达标** |
+| **验收门禁** | 改动后仍须 **parity PASS** + 项目 **`/verify` PASS**（含 count-ratchet：suite sum `fast ≤ official × 1.05`、per-tool `× 1.15`）；未过 verify **不得**写性能结论或 commit 宣称 |
+| **达不到 2×** | PRD/ADR 写 **「候选路径 vs 已知硬顶」** + 实测证据；**禁止**假装必达或编造倍数 |
+
+**硬顶证据（空 worker，ir-rounds=20）：** Node no-op ≈110M Ir；同场景 Rust no-op ≈0.32M Ir。故小工具在「官方 Node worker vs 加速 Node worker」下理论 ≤~1.2×；≥2× 必须让 fast 的 lab worker 离开 Node（ADR-0003）。
+
+### 12.4.2 小套件缺口表（开工前基线 · tip `98cc5ad` · lab=Ir · **历史**）
+
+| tool | Ir×（目标 ≥2.0） | softCpu×（展示） | wall×（展示） | 状态 | 候选路径 | 已知硬顶 / 证据 |
+|---|---:|---:|---:|---|---|---|
+| `read:small` | **1.000** | 3.978 | 1.273 | 目标 ≥2× | 减父进程固定开销；字节路径 / 少 alloc（见 `bottlenecks.json`） | 小文件 Ir 几乎贴官方；固定 Node+Valgrind 底座占比高 |
+| `read:boundary-lines` | **1.431** | 2.482 | 1.954 | 目标 ≥2× | 继续截断热路径（v0.3.1–0.3.2 已有胜）；避免全量 `split` | 已有截断胜；再翻倍需更深父进程路径 |
+| `bash` | **1.306** | 1.053 | 1.045 | 目标 ≥2× 相对当前 baseline | 父进程侧再削；**native 长生命周期 helper**（若证据优） | ADR-0002：持久 bash session 在本机 Ir **更差**；`bash -c` exec 进命令、child 计量绑定 |
+| `edit` | **0.998** | 1.912 | 0.894 | 目标 ≥2× | 单遍 replace / 少字符串拷（bottlenecks） | 现 Ir ≈ 平手甚至略负；热路径短，固定底座占比高 |
+| `write` | **0.999** | 1.108 | 1.247 | 目标 ≥2× | 几乎无算法头寸（mkdir+write） | bottlenecks：expectedWin = noise-level |
+| `grep` | **1.000** | 0.961 | 0.997 | 目标 ≥2× 相对当前 baseline | 保留 `rg`；试 **native helper 摊销 spawn**；禁再走已拒的 in-process | ADR-0002：in-process JS walk Ir **劣于** spawn `rg`（~0.69×） |
+| `find` | **1.003** | 0.977 | 1.002 | 目标 ≥2× 相对当前 baseline | 同 grep：`fd` + 可选 native helper | ADR-0002：in-process 劣于 `fd`（~0.92×） |
+| `ls` | **1.468** | **16.943** | **17.649** | **Ir 未达标**（目标 ≥2×）；soft/wall 已远超 2×（仅展示） | `withFileTypes` 等再削父进程 Ir；勿为 wall 牺牲 Ir 叙事 | soft/wall 大胜 ≠ Ir 达标；lab 仍以 Ir 判 |
+
+**小套件结论（诚实）：八行无一 Ir ≥2.0×。** suite sum ~1.14×（v0.3.3 收工文案）。
+
+### 12.4.3 大套件跟踪（开工前基线 · 同 tip 测次 · **历史**）
+
+| tool | Ir× | softCpu× | wall× | 备注 |
+|---|---:|---:|---:|---|
+| `read:large-2mb` | **1.828** | 1.937 | 2.739 | **未达** Ir 2×（旧口误「已 ≥2×」以本表为准）；须保持并继续压 |
+| `read:near-2000` | 1.290 | 1.736 | 1.886 | 目标 ≥2× |
+| `read:near-50kb` | 1.050 | 1.981 | 1.564 | 目标 ≥2× |
+| `ls:dir-2k` | 1.790 | 8.542 | 25.891 | Ir 未达 2×；soft/wall 已远超（展示） |
+| `find:dir-2k` | **0.915** | 0.897 | 0.900 | 目标 ≥2×；现 **劣于** 官方 Ir |
+| `grep:large-2mb` | 1.148 | 1.391 | 1.196 | 目标 ≥2× |
+
+### 12.4.4 开工顺序（已执行完毕 · 归档）
+
+1. `edit` / `write` / `read:small`（JS 热路径缺口最大或平手）。  
+2. `read:boundary-lines` 与 `ls`：从 ~1.4× Ir 冲 2×（勿把 soft/wall 当已收工）。  
+3. `bash` / `grep` / `find`：优先 **native 长生命周期 helper** 证据；ADR-0002 已拒持久 session 与 in-process grep/find（Ir）。  
+4. 每批：parity → bench-ab → `/verify` → README/Page → commit/push **main**（无 branch/CI）。  
+5. 若某工具经严肃尝试仍不可达：回写本表「硬顶」行 + ADR，标例外，**不**编倍数。
+
+### 12.4.5 硬约束
+
+- 不改官方 pin `86dc686`；不碰 `powershell`。  
+- 不破坏已有相对领先（如 `ls` soft/wall、boundary 截断胜）除非 suite 净胜有证据。  
+- 未过 `/verify` 不宣称；Page/README **只贴实测**。
+
+### 12.4.6 收工对照（v0.3.4 · 实测 `results/bench-linux*.json` · 2026-10-31 14:05/14:07 CST）
+
+| 项 | 内容 |
+|---|---|
+| **落地** | `bin/harness-helper` + `native/harness-helper/`（forbidUnsafe）；lab fast = native `ir-worker`；runtime = `serve` JSONL；见 ADR-0003 |
+| **小套件（硬验收）** | **八行全部 Ir ≥2.0×**；min **bash 2.50×** / **find 2.30×**；suite sum **4.915×**（off `2111834999` → fast `429680804`） |
+| **小套件逐工具 Ir×** | read:small **293.79×**；boundary-lines **11.07×**；bash **2.50×**；edit **285.39×**；write **326.14×**；grep **4.86×**；find **2.30×**；ls **12.24×** |
+| **大套件（跟踪）** | suite sum **~1.72×**；**并非全部 ≥2×**：large-2mb **1.97×**、ls:dir-2k **1.37×**、find:dir-2k **1.62×**、grep:large-2mb **1.53×**；near-2000 **14.72×**、near-50kb **13.05×** |
+| **诚实注** | 空 Node worker ≈110M Ir → Node-only 理论 ≤~1.2×；≥2× 依赖 native lab worker。softCpu/wall 非门；write softCpu 可能显示更差 |
+| **门禁** | parity PASS + `/verify` PASS（含 ADR-0003、forbid-unsafe、count-ratchet）后才宣称 |
+

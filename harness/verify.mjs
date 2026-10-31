@@ -68,7 +68,7 @@ try {
 }
 
 // 5 ADR + ADAPTER + METRICS
-for (const f of ["docs/ADR-0001-tech-choice.md", "docs/ADR-0002-spawn-reuse.md", "docs/ADAPTER.md", "docs/AUDIT-truncation.md", "docs/METRICS.md"]) {
+for (const f of ["docs/ADR-0001-tech-choice.md", "docs/ADR-0002-spawn-reuse.md", "docs/ADR-0003-native-ir-worker.md", "docs/ADAPTER.md", "docs/AUDIT-truncation.md", "docs/METRICS.md"]) {
   try {
     await access(path.join(ROOT, f));
     items.push({ name: f, status: "PASS", detail: "present" });
@@ -77,13 +77,17 @@ for (const f of ["docs/ADR-0001-tech-choice.md", "docs/ADR-0002-spawn-reuse.md",
   }
 }
 
-// 6 no unsafe
+// 6 no unsafe (allow #![forbid(unsafe_code)] / forbidUnsafe docs)
 const rg = await run("rg", ["-n", "\\bunsafe\\b", "native", "packages"]);
-const unsafeHits = (rg.out || "").trim();
+const unsafeHits = (rg.out || "")
+  .split("\n")
+  .map((l) => l.trim())
+  .filter((l) => l && !/forbid\(unsafe/.test(l) && !/forbidUnsafe/.test(l) && !/no unsafe/.test(l))
+  .join("\n");
 items.push({
   name: "forbid-unsafe",
   status: unsafeHits ? "FAIL" : "PASS",
-  detail: unsafeHits ? unsafeHits.slice(0, 200) : "no unsafe keyword under native/packages",
+  detail: unsafeHits ? unsafeHits.slice(0, 200) : "no unsafe blocks under native/packages (forbid(unsafe_code) OK)",
 });
 
 // 7 fd available

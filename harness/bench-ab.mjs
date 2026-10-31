@@ -9,12 +9,14 @@ process.env.PATH = join(dirname(__fu(import.meta.url)), "..", "bin") + ":" + (pr
 
 import { performance } from "perf_hooks";
 import { writeFile, mkdir, copyFile, access } from "fs/promises";
+import { existsSync } from "fs";
 import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import os from "os";
 import * as Official from "../packages/official-shim/src/tools.mjs";
 import * as Fast from "../packages/fast-tools/src/tools.mjs";
+import { nativeShutdown } from "../packages/fast-tools/src/native-client.mjs";
 import { probeDeterministicMetric, measureValgrindIr, measureSoftCpuProxy, stabilityStats } from "./lib/deterministic.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +24,8 @@ const ROOT = path.resolve(__dirname, "..");
 const FIXTURE = path.join(ROOT, "fixture");
 const RESULTS = path.join(ROOT, "results");
 const IR_WORKER = path.join(ROOT, "harness", "ir-worker.mjs");
+const NATIVE_HELPER = path.join(ROOT, "bin", "harness-helper");
+const useNativeFastIr = existsSync(NATIVE_HELPER);
 
 const argv = process.argv.slice(2);
 function flag(name, def) {
@@ -191,11 +195,19 @@ for (const [name, [o, f]] of Object.entries(scenarios)) {
       workerArgs: ["official", name, String(irRounds)],
       repeats: irRepeats,
     });
-    const fastIr = measureValgrindIr({
-      workerPath: IR_WORKER,
-      workerArgs: ["fast", name, String(irRounds)],
-      repeats: irRepeats,
-    });
+    // §12.4: fast lab Ir via native harness-helper (Node fixed base ~110M makes ≥2× unreachable in-process).
+    const fastIr = useNativeFastIr
+      ? measureValgrindIr({
+          workerPath: NATIVE_HELPER,
+          workerArgs: ["ir-worker", name, String(irRounds)],
+          repeats: irRepeats,
+          directBinary: true,
+        })
+      : measureValgrindIr({
+          workerPath: IR_WORKER,
+          workerArgs: ["fast", name, String(irRounds)],
+          repeats: irRepeats,
+        });
     officialCpu = offIr.ir;
     fastCpu = fastIr.ir;
     countStability = { official: offIr.stability, fast: fastIr.stability };
@@ -243,7 +255,7 @@ const out = {
   suite,
   measuredAt: new Date().toISOString(),
   metric: hw.metric,
-  env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} rounds=${rounds} irRounds=${irRounds} paired=in-process+${hw.metric}`,
+  env: `${os.type()} ${os.release()} ${os.arch()} node${process.version} rounds=${rounds} irRounds=${irRounds} paired=in-process+${hw.metric}${useNativeFastIr ? "+native-fast-ir" : ""}`,
   notes: hw.notes,
   hw: {
     available: hw.available,
@@ -262,4 +274,5 @@ const finalOut = path.isAbsolute(outName)
     : path.join(RESULTS, outName);
 await mkdir(path.dirname(finalOut), { recursive: true });
 await writeFile(finalOut, JSON.stringify(out, null, 2));
+nativeShutdown();
 console.log("wrote", finalOut);

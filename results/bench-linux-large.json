@@ -2,14 +2,14 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "suite": "large",
-  "measuredAt": "2026-10-31T05:14:16.546Z",
+  "measuredAt": "2026-10-31T06:07:48.053Z",
   "metric": "valgrind-ir",
-  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=11 irRounds=12 paired=in-process+valgrind-ir",
-  "notes": "metric=valgrind-ir; sampleIr=94419285; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
+  "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=15 irRounds=12 paired=in-process+valgrind-ir+native-fast-ir",
+  "notes": "metric=valgrind-ir; sampleIr=94418785; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "hw": {
     "available": true,
     "metric": "valgrind-ir",
-    "sample": 94419285,
+    "sample": 94418785,
     "tried": [
       {
         "step": 1,
@@ -66,7 +66,7 @@
       {
         "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
         "ok": true,
-        "detail": "I refs=94419285"
+        "detail": "I refs=94418785"
       }
     ],
     "softProxy": false
@@ -75,30 +75,30 @@
     {
       "tool": "read:large-2mb",
       "metric": "valgrind-ir",
-      "officialCpu": 784032193,
-      "fastCpu": 428819786,
-      "officialSoftCpuUs": 8453,
-      "fastSoftCpuUs": 4363,
-      "officialWallMs": 7.478,
-      "fastWallMs": 2.73,
+      "officialCpu": 821480191,
+      "fastCpu": 417977025,
+      "officialSoftCpuUs": 8482,
+      "fastSoftCpuUs": 1100,
+      "officialWallMs": 25.228,
+      "fastWallMs": 9.803,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 784032193,
-          "min": 784032193,
-          "max": 784032193,
-          "mean": 784032193,
+          "median": 821480191,
+          "min": 821480191,
+          "max": 821480191,
+          "mean": 821480191,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 428819786,
-          "min": 428819786,
-          "max": 428819786,
-          "mean": 428819786,
+          "median": 417977025,
+          "min": 417977025,
+          "max": 417977025,
+          "mean": 417977025,
           "cv": 0
         }
       }
@@ -106,30 +106,30 @@
     {
       "tool": "read:near-2000",
       "metric": "valgrind-ir",
-      "officialCpu": 205842784,
-      "fastCpu": 159579149,
-      "officialSoftCpuUs": 316,
-      "fastSoftCpuUs": 182,
-      "officialWallMs": 0.313,
-      "fastWallMs": 0.166,
+      "officialCpu": 205861671,
+      "fastCpu": 13989383,
+      "officialSoftCpuUs": 442,
+      "fastSoftCpuUs": 216,
+      "officialWallMs": 0.369,
+      "fastWallMs": 0.289,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 205842784,
-          "min": 205842784,
-          "max": 205842784,
-          "mean": 205842784,
+          "median": 205861671,
+          "min": 205861671,
+          "max": 205861671,
+          "mean": 205861671,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 159579149,
-          "min": 159579149,
-          "max": 159579149,
-          "mean": 159579149,
+          "median": 13989383,
+          "min": 13989383,
+          "max": 13989383,
+          "mean": 13989383,
           "cv": 0
         }
       }
@@ -137,30 +137,30 @@
     {
       "tool": "read:near-50kb",
       "metric": "valgrind-ir",
-      "officialCpu": 168893687,
-      "fastCpu": 160863796,
-      "officialSoftCpuUs": 317,
-      "fastSoftCpuUs": 160,
-      "officialWallMs": 0.219,
-      "fastWallMs": 0.14,
+      "officialCpu": 168893443,
+      "fastCpu": 12942831,
+      "officialSoftCpuUs": 340,
+      "fastSoftCpuUs": 184,
+      "officialWallMs": 0.247,
+      "fastWallMs": 0.316,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 168893687,
-          "min": 168893687,
-          "max": 168893687,
-          "mean": 168893687,
+          "median": 168893443,
+          "min": 168893443,
+          "max": 168893443,
+          "mean": 168893443,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 160863796,
-          "min": 160863796,
-          "max": 160863796,
-          "mean": 160863796,
+          "median": 12942831,
+          "min": 12942831,
+          "max": 12942831,
+          "mean": 12942831,
           "cv": 0
         }
       }
@@ -168,30 +168,30 @@
     {
       "tool": "ls:dir-2k",
       "metric": "valgrind-ir",
-      "officialCpu": 543450122,
-      "fastCpu": 303680440,
-      "officialSoftCpuUs": 10985,
-      "fastSoftCpuUs": 1286,
-      "officialWallMs": 31.924,
-      "fastWallMs": 1.233,
+      "officialCpu": 544545601,
+      "fastCpu": 396486416,
+      "officialSoftCpuUs": 8052,
+      "fastSoftCpuUs": 153,
+      "officialWallMs": 8.752,
+      "fastWallMs": 2.078,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 543450122,
-          "min": 543450122,
-          "max": 543450122,
-          "mean": 543450122,
+          "median": 544545601,
+          "min": 544545601,
+          "max": 544545601,
+          "mean": 544545601,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 303680440,
-          "min": 303680440,
-          "max": 303680440,
-          "mean": 303680440,
+          "median": 396486416,
+          "min": 396486416,
+          "max": 396486416,
+          "mean": 396486416,
           "cv": 0
         }
       }
@@ -199,30 +199,30 @@
     {
       "tool": "find:dir-2k",
       "metric": "valgrind-ir",
-      "officialCpu": 471041755,
-      "fastCpu": 514987406,
-      "officialSoftCpuUs": 2296,
-      "fastSoftCpuUs": 2561,
-      "officialWallMs": 20.079,
-      "fastWallMs": 22.316,
+      "officialCpu": 468611824,
+      "fastCpu": 289395137,
+      "officialSoftCpuUs": 2244,
+      "fastSoftCpuUs": 475,
+      "officialWallMs": 8.833,
+      "fastWallMs": 5.708,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 471041755,
-          "min": 471041755,
-          "max": 471041755,
-          "mean": 471041755,
+          "median": 468611824,
+          "min": 468611824,
+          "max": 468611824,
+          "mean": 468611824,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 514987406,
-          "min": 514987406,
-          "max": 514987406,
-          "mean": 514987406,
+          "median": 289395137,
+          "min": 289395137,
+          "max": 289395137,
+          "mean": 289395137,
           "cv": 0
         }
       }
@@ -230,30 +230,30 @@
     {
       "tool": "grep:large-2mb",
       "metric": "valgrind-ir",
-      "officialCpu": 2131127436,
-      "fastCpu": 1856603099,
-      "officialSoftCpuUs": 17866,
-      "fastSoftCpuUs": 12845,
-      "officialWallMs": 22.081,
-      "fastWallMs": 18.464,
+      "officialCpu": 2118676303,
+      "fastCpu": 1388607620,
+      "officialSoftCpuUs": 15719,
+      "fastSoftCpuUs": 2000,
+      "officialWallMs": 17.361,
+      "fastWallMs": 9.981,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 2131127436,
-          "min": 2131127436,
-          "max": 2131127436,
-          "mean": 2131127436,
+          "median": 2118676303,
+          "min": 2118676303,
+          "max": 2118676303,
+          "mean": 2118676303,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 1856603099,
-          "min": 1856603099,
-          "max": 1856603099,
-          "mean": 1856603099,
+          "median": 1388607620,
+          "min": 1388607620,
+          "max": 1388607620,
+          "mean": 1388607620,
           "cv": 0
         }
       }

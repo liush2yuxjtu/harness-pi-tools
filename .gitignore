@@ -18,3 +18,4 @@ fixture/write_sandbox/out_fast.txt
 fixture/write_sandbox/parity_*.txt
 fixture/edit_sandbox/target_ir_*.txt
 fixture/write_sandbox/out_ir_*.txt
+native/harness-helper/target/
