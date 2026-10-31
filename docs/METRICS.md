@@ -72,3 +72,5 @@ Large fixtures: `node fixture/generate-large.mjs` (gitignored payloads).
 ## Hillclimb note (v0.3.1)
 
 Next lab goal after v0.3.0: lower Ir on **read/edit/write/truncate** while keeping parity. Spawn-bound bash/grep/find are intentionally not hard targets. Gate remains `valgrind-ir` + count-ratchet; `wallMs` display-only. See `PRD.md` §12.
+
+§12.1 shipped in v0.3.2 (`e610ec8`). §12.3 shipped in v0.3.3: persistent session + in-process grep/find **rejected** under Valgrind Ir (see ADR-0002); bash `truncateTail` line-scan + grep/find post-process shipped. Gate unchanged.

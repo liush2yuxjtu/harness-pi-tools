@@ -186,11 +186,15 @@ export async function toolGrep(cwd, { pattern, path: searchPath = ".", glob }) {
   args.push(searchPath);
   const { code, stdout, stderr } = await runSpawn("rg", args, { cwd });
   if (code !== 0 && code !== 1) throw new Error(stderr.trim() || `ripgrep exited ${code}`);
-  const lines = stdout.split("\n").filter((l, i, a) => !(i === a.length - 1 && l === ""));
+  // Avoid filter alloc + truncateLine call overhead when lines are short (harness fixtures).
+  const endsWithNl = stdout.endsWith("\n");
+  const rawLines = stdout.split("\n");
+  const n = endsWithNl ? rawLines.length - 1 : rawLines.length;
   const formatted = [];
-  for (const line of lines) {
-    const { text } = truncateLine(line.replace(/\0/g, ""));
-    formatted.push(text);
+  for (let i = 0; i < n; i++) {
+    let line = rawLines[i];
+    if (line.indexOf("\0") >= 0) line = line.replace(/\0/g, "");
+    formatted.push(line.length <= 500 ? line : truncateLine(line).text);
   }
   const rawOutput = formatted.join("\n");
   const truncation = truncateHead(rawOutput, { maxLines: Number.MAX_SAFE_INTEGER });
@@ -206,7 +210,8 @@ export async function toolFind(cwd, { pattern = ".", path: searchPath = "." } = 
   fdArgs.push(searchPath);
   const { code, stdout, stderr } = await runSpawn("fd", fdArgs, { cwd });
   if (code !== 0 && code !== 1) throw new Error(stderr.trim() || `fd exited ${code}`);
-  const rawOutput = stdout.replace(/\n$/, "");
+  // Prefer endsWith over replace alloc when no trailing newline.
+  const rawOutput = stdout.endsWith("\n") ? stdout.slice(0, -1) : stdout;
   const truncation = truncateHead(rawOutput, { maxLines: Number.MAX_SAFE_INTEGER });
   let text = truncation.content || "(no results)";
   if (truncation.truncated) text += `\n\n[${formatSize(DEFAULT_MAX_BYTES)} limit reached]`;

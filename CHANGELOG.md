@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.3 — 2026-10-31 (Asia/Shanghai)
+
+- **/goal §12.3 spawn-path Ir:** evidence in `docs/ADR-0002-spawn-reuse.md` — persistent bash session and in-process grep/find **rejected** under Valgrind Ir; ship parent-side wins instead.
+- Fast `truncateTail`: under byte cap use `countLinesNoAlloc` + backward newline scan for line-only overflow (bash `seq 1 3000` path) — small-suite **bash ~1.31×**.
+- Fast grep/find: keep `rg`/`fd` spawn; skip `truncateLine` when short; trim trailing-newline handling.
+- Measured small suite sum **~1.14×**; large suite sum **~1.26×** (`grep:large-2mb` ~1.15×). `ls` / `read:boundary-lines` kept.
+
+
 ## 0.3.2 — 2026-10-31 (Asia/Shanghai)
 
 - Ir hillclimb deepen: `truncateFromCountingLines` line-only path (under byte cap) skips per-line `Buffer.byteLength` — `read:boundary-lines` **1.43×**.

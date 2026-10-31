@@ -1,7 +1,8 @@
 # HARNESS PRD · 官方 Pi 基础工具加速（求职作品）
 
-> 状态：v0.3.0 已 ship（`valgrind-ir` lab 门禁 PASS）；**下一刀 /goal = Ir hillclimb**（主攻 read/edit/write/truncate）  
-> 日期：2026-10-31（Asia/Taipei）
+> 状态：v0.3.3 已 ship（§12.3 spawn-path Ir：bash truncateTail 扫描；grep/find 保 rg/fd + 后处理）  
+> §12.1 JS 热路径 + §12.3 spawn-path 均已收工；门禁 `valgrind-ir` + count-ratchet  
+> 日期：2026-10-31（Asia/Shanghai）
 
 ## 1. 一句话
 
@@ -92,13 +93,32 @@ MIT，公开仓库，简历可引用。
 
 1 求职不换 CLI · 2 钉官方 commit · 3 只做工具路径 · 4–5 七工具进 v1 · 6 Rust 可选 · 7 同 schema + 弄清截断 · 8–11 CPU 事件主 + 墙钟/RSS/体积 · 12 禁 unsafe · 13–14 必须 A/B + 允许 standalone · 15–16 fixture + 双平台 · 17–18 verify 门禁 + 实测 README · 19 MIT · 20 **先 PRD + FULL workflow 审批再开工**。
 
-## 12. 下一刀 /goal · Ir hillclimb（v0.3.0 之后）
+## 12. Ir hillclimb · 本轮目标与 spawn 路径（产品决策）
+
+### 12.1 本轮 /goal（已收工 · v0.3.1→v0.3.2）
 
 | 项 | 内容 |
 |---|---|
 | **Goal** | 在保持 parity 的前提下压 **Valgrind Ir**，优先让 `read:small` / `read:boundary-lines` / `edit` / `write` 的 `fastCpu < officialCpu`，并尽量拉开 suite 总和 |
-| **主攻** | `packages/fast-tools` 的 **read / edit / write / truncate** JS 热路径（少 split/join、少冗余 syscall、边界截断不整文件 re-join） |
-| **非本轮硬目标** | `bash` / `grep` / `find`（spawn 绑定 `bash`/`rg`/`fd`，硬压 Ir 收益小）；`ls` 已大胜，只回归不破坏 |
-| **门禁不变** | lab metric = `valgrind-ir`；verify `count-ratchet`（suite×1.05 + tool×1.15）；`wallMs` 仅展示 |
+| **主攻** | `packages/fast-tools` 的 **read / edit / write / truncate** JS 热路径（少 split/join、少冗余 syscall、边界截断不整文件 re-join；v0.3.2 含 line-only truncate、edit `lastIndexOf`） |
+| **门禁不变** | lab metric = `valgrind-ir`；verify `count-ratchet`（suite×1.05 + tool×1.15）；`wallMs` 仅展示（见 `docs/METRICS.md`） |
 | **验收** | parity PASS → bench 刷新实测表 → `/verify` PASS → 才允许 commit/push 与更新 README/Page 成绩 |
-| **基线对照（v0.3.0 小套件）** | suite Ir 2.10B→1.99B（1.05×）；ls 1.47×；read/edit/write ≈1.00×（略高，本轮要翻成 fast 更低） |
+| **收工对照（v0.3.2 小套件 · 实测见 README）** | suite Ir ~1.10×；`read:boundary-lines` ~1.43×；四目标均 `fastCpu < officialCpu`；`ls` ~1.47× 保持 |
+
+### 12.2 `bash` / `grep` / `find`：spawn-bound 瓶颈（本轮非硬目标）
+
+与 §12.1 的纯 JS 热路径不同，`bash` / `grep` / `find` 在官方实现与本 harness 加速路径上均为 **spawn-bound**：每次工具调用都会重新拉起子进程，并分别绑定到 `bash -c`、`rg`、`fd`。Valgrind Ir 在 `--trace-children` 下汇总 parent Node 与子进程的 cachegrind `summary:`，因此这类工具的 Ir 里相当一部分来自进程启动与外部二进制本身，而不是本仓库可控的 JS 切片/拼装循环。
+
+本轮将三者标为 **「非本轮硬目标」** 是**产品范围决策**（非仓促漏做）：硬压 spawn 路径 Ir 的边际收益小；现有 A/B 仍对它们做 fair 测量与 count-ratchet（每工具 ×1.15），但不把「显著压低其 Ir」当作 §12.1 验收条件。`ls` 已有明显 Ir 优势，本轮仅回归保持。`powershell` 仍「本阶段不碰」（见 §4）。
+
+未来若单独开一轮：合理方向是减少「每次调用都冷启动」的成本——例如在安全边界内**复用长生命周期 helper 进程**，或对 bash 类交互考虑**持久 shell session**——并继续用同一套 `valgrind-ir` + count-ratchet 门禁验收。具体实现与加速比须待新一轮实测；本节不预设未验证方案细节或数字。
+
+### 12.3 spawn-path Ir hillclimb（已收工 · v0.3.3 · 见 `docs/ADR-0002-spawn-reuse.md`）
+
+| 项 | 内容 |
+|---|---|
+| **Goal** | 压 `bash` / `grep` / `find` 的 Valgrind Ir；方向曾评估持久 session / in-process helper |
+| **证据结论** | 持久 bash session 与 in-process grep/find 在本机 Valgrind Ir 下**均不优**（session 更差；JS walk > `rg`/`fd` child） |
+| **落地** | **bash：** `truncateTail` 在 byte 帽内用 `countLinesNoAlloc` + 反向扫换行取尾部（避免整表 `split`）；**grep/find：** 保留 `rg`/`fd` spawn，削减后处理 alloc |
+| **门禁** | `valgrind-ir` + count-ratchet；parity + `/verify` PASS 后才写结论 |
+| **收工对照（小套件实测）** | `bash` ~**1.31×**；grep/find ~1.00×；suite sum ~**1.14×**；`ls` / `read:boundary-lines` 保持 |

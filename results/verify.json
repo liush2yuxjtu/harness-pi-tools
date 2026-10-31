@@ -37,6 +37,11 @@
       "detail": "present"
     },
     {
+      "name": "docs/ADR-0002-spawn-reuse.md",
+      "status": "PASS",
+      "detail": "present"
+    },
+    {
       "name": "docs/ADAPTER.md",
       "status": "PASS",
       "detail": "present"
@@ -69,10 +74,10 @@
     {
       "name": "count-ratchet",
       "status": "PASS",
-      "detail": "metric=valgrind-ir; suiteSum fast=1926290642 official=2111772714 limit=2217361350 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
+      "detail": "metric=valgrind-ir; suiteSum fast=1844060000 official=2103797663 limit=2208987546 (×1.05) OK; toolCeil×1.15 OK for 8 tools; wallMs not gated"
     }
   ],
-  "at": "2026-10-31T04:20:00.395Z",
+  "at": "2026-10-31T05:14:51.861Z",
   "countCeiling": 1.05,
   "countToolCeiling": 1.15
 }

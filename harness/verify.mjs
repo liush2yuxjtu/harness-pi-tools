@@ -68,7 +68,7 @@ try {
 }
 
 // 5 ADR + ADAPTER + METRICS
-for (const f of ["docs/ADR-0001-tech-choice.md", "docs/ADAPTER.md", "docs/AUDIT-truncation.md", "docs/METRICS.md"]) {
+for (const f of ["docs/ADR-0001-tech-choice.md", "docs/ADR-0002-spawn-reuse.md", "docs/ADAPTER.md", "docs/AUDIT-truncation.md", "docs/METRICS.md"]) {
   try {
     await access(path.join(ROOT, f));
     items.push({ name: f, status: "PASS", detail: "present" });

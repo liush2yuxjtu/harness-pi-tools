@@ -222,6 +222,70 @@ export function truncateTail(content, options = {}) {
   const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const totalBytes = Buffer.byteLength(content, "utf-8");
+
+  if (content.length === 0) {
+    return {
+      content,
+      truncated: false,
+      truncatedBy: null,
+      totalLines: 0,
+      totalBytes: 0,
+      outputLines: 0,
+      outputBytes: 0,
+      lastLinePartial: false,
+      firstLineExceedsLimit: false,
+      maxLines,
+      maxBytes,
+    };
+  }
+
+  // Under byte cap: avoid allocating string[] for the common bash path.
+  if (totalBytes <= maxBytes) {
+    const totalLines = countLinesNoAlloc(content);
+    if (totalLines <= maxLines) {
+      return {
+        content,
+        truncated: false,
+        truncatedBy: null,
+        totalLines,
+        totalBytes,
+        outputLines: totalLines,
+        outputBytes: totalBytes,
+        lastLinePartial: false,
+        firstLineExceedsLimit: false,
+        maxLines,
+        maxBytes,
+      };
+    }
+    // Line-only overflow: find start of last maxLines without full split.
+    const endsWithNl = content.charCodeAt(content.length - 1) === 10;
+    let pos = endsWithNl ? content.length - 1 : content.length;
+    let found = 0;
+    while (pos > 0 && found < maxLines) {
+      const prev = content.lastIndexOf("\n", pos - 1);
+      found++;
+      if (found === maxLines) {
+        const start = prev < 0 ? 0 : prev + 1;
+        const end = endsWithNl ? content.length - 1 : content.length;
+        const out = content.slice(start, end);
+        return {
+          content: out,
+          truncated: true,
+          truncatedBy: "lines",
+          totalLines,
+          totalBytes,
+          outputLines: maxLines,
+          outputBytes: Buffer.byteLength(out, "utf-8"),
+          lastLinePartial: false,
+          firstLineExceedsLimit: false,
+          maxLines,
+          maxBytes,
+        };
+      }
+      pos = prev < 0 ? 0 : prev;
+    }
+  }
+
   const lines = splitLinesForCounting(content);
   const totalLines = lines.length;
   if (totalLines <= maxLines && totalBytes <= maxBytes) {
@@ -279,4 +343,90 @@ export function truncateTail(content, options = {}) {
 export function truncateLine(line, maxChars = GREP_MAX_LINE_LENGTH) {
   if (line.length <= maxChars) return { text: line, wasTruncated: false };
   return { text: `${line.slice(0, maxChars)}... [truncated]`, wasTruncated: true };
+}
+
+
+/**
+ * Streaming truncateTail: keep at most maxLines trailing lines while ingesting chunks.
+ * finalize() matches truncateTail() on the same full string (harness parity).
+ */
+export function createTailAccumulator(options = {}) {
+  const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
+  const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
+  const ring = [];
+  let partial = "";
+  let totalLines = 0;
+  let totalBytes = 0;
+  let overflowed = false;
+  let underParts = [];
+
+  function pushLine(line) {
+    totalLines += 1;
+    ring.push(line);
+    if (ring.length > maxLines) {
+      overflowed = true;
+      ring.shift();
+      underParts = null;
+    }
+  }
+
+  return {
+    push(chunk) {
+      const str = typeof chunk === "string" ? chunk : chunk.toString("utf-8");
+      if (!str) return;
+      totalBytes += Buffer.byteLength(str, "utf-8");
+      if (underParts) underParts.push(str);
+      const parts = (partial + str).split("\n");
+      partial = parts.pop() ?? "";
+      for (const line of parts) pushLine(line);
+      if (!overflowed && totalBytes > maxBytes) {
+        overflowed = true;
+        underParts = null;
+      }
+    },
+    finalize() {
+      if (partial.length > 0) {
+        pushLine(partial);
+        partial = "";
+      }
+      if (underParts && !overflowed) {
+        return truncateTail(underParts.join(""), { maxLines, maxBytes });
+      }
+      let outputLinesArr = [];
+      let outputBytesCount = 0;
+      let truncatedBy = "lines";
+      let lastLinePartial = false;
+      for (let i = ring.length - 1; i >= 0 && outputLinesArr.length < maxLines; i--) {
+        const line = ring[i];
+        const lineBytes = Buffer.byteLength(line, "utf-8") + (outputLinesArr.length > 0 ? 1 : 0);
+        if (outputBytesCount + lineBytes > maxBytes) {
+          truncatedBy = "bytes";
+          if (outputLinesArr.length === 0) {
+            const truncatedLine = truncateStringToBytesFromEnd(line, maxBytes);
+            outputLinesArr.unshift(truncatedLine);
+            outputBytesCount = Buffer.byteLength(truncatedLine, "utf-8");
+            lastLinePartial = true;
+          }
+          break;
+        }
+        outputLinesArr.unshift(line);
+        outputBytesCount += lineBytes;
+      }
+      if (outputLinesArr.length >= maxLines && outputBytesCount <= maxBytes) truncatedBy = "lines";
+      const outputContent = outputLinesArr.join("\n");
+      return {
+        content: outputContent,
+        truncated: true,
+        truncatedBy,
+        totalLines,
+        totalBytes,
+        outputLines: outputLinesArr.length,
+        outputBytes: Buffer.byteLength(outputContent, "utf-8"),
+        lastLinePartial,
+        firstLineExceedsLimit: false,
+        maxLines,
+        maxBytes,
+      };
+    },
+  };
 }

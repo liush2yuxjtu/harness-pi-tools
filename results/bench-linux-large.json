@@ -2,14 +2,14 @@
   "platform": "linux",
   "pin": "86dc686cf2fd795b2b24af3d614bb0e1307bcd76",
   "suite": "large",
-  "measuredAt": "2026-10-31T04:07:47.703Z",
+  "measuredAt": "2026-10-31T05:14:16.546Z",
   "metric": "valgrind-ir",
   "env": "Linux 6.12.94+ x64 nodev24.22.1 rounds=11 irRounds=12 paired=in-process+valgrind-ir",
-  "notes": "metric=valgrind-ir; sampleIr=94419270; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
+  "notes": "metric=valgrind-ir; sampleIr=94419285; lab primary = Valgrind cachegrind Ir with node --predictable; wallMs secondary (not lab gate)",
   "hw": {
     "available": true,
     "metric": "valgrind-ir",
-    "sample": 94419270,
+    "sample": 94419285,
     "tried": [
       {
         "step": 1,
@@ -66,7 +66,7 @@
       {
         "cmd": "valgrind --tool=cachegrind node --predictable -e <loop>",
         "ok": true,
-        "detail": "I refs=94419270"
+        "detail": "I refs=94419285"
       }
     ],
     "softProxy": false
@@ -75,30 +75,30 @@
     {
       "tool": "read:large-2mb",
       "metric": "valgrind-ir",
-      "officialCpu": 794095075,
-      "fastCpu": 369493161,
-      "officialSoftCpuUs": 9760,
-      "fastSoftCpuUs": 4539,
-      "officialWallMs": 17.87,
-      "fastWallMs": 9.676,
+      "officialCpu": 784032193,
+      "fastCpu": 428819786,
+      "officialSoftCpuUs": 8453,
+      "fastSoftCpuUs": 4363,
+      "officialWallMs": 7.478,
+      "fastWallMs": 2.73,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 794095075,
-          "min": 794095075,
-          "max": 794095075,
-          "mean": 794095075,
+          "median": 784032193,
+          "min": 784032193,
+          "max": 784032193,
+          "mean": 784032193,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 369493161,
-          "min": 369493161,
-          "max": 369493161,
-          "mean": 369493161,
+          "median": 428819786,
+          "min": 428819786,
+          "max": 428819786,
+          "mean": 428819786,
           "cv": 0
         }
       }
@@ -106,30 +106,30 @@
     {
       "tool": "read:near-2000",
       "metric": "valgrind-ir",
-      "officialCpu": 205870671,
-      "fastCpu": 196205522,
-      "officialSoftCpuUs": 377,
-      "fastSoftCpuUs": 332,
-      "officialWallMs": 0.316,
-      "fastWallMs": 0.241,
+      "officialCpu": 205842784,
+      "fastCpu": 159579149,
+      "officialSoftCpuUs": 316,
+      "fastSoftCpuUs": 182,
+      "officialWallMs": 0.313,
+      "fastWallMs": 0.166,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 205870671,
-          "min": 205870671,
-          "max": 205870671,
-          "mean": 205870671,
+          "median": 205842784,
+          "min": 205842784,
+          "max": 205842784,
+          "mean": 205842784,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 196205522,
-          "min": 196205522,
-          "max": 196205522,
-          "mean": 196205522,
+          "median": 159579149,
+          "min": 159579149,
+          "max": 159579149,
+          "mean": 159579149,
           "cv": 0
         }
       }
@@ -137,30 +137,30 @@
     {
       "tool": "read:near-50kb",
       "metric": "valgrind-ir",
-      "officialCpu": 168892351,
-      "fastCpu": 160155664,
-      "officialSoftCpuUs": 424,
-      "fastSoftCpuUs": 154,
-      "officialWallMs": 0.202,
-      "fastWallMs": 0.139,
+      "officialCpu": 168893687,
+      "fastCpu": 160863796,
+      "officialSoftCpuUs": 317,
+      "fastSoftCpuUs": 160,
+      "officialWallMs": 0.219,
+      "fastWallMs": 0.14,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 168892351,
-          "min": 168892351,
-          "max": 168892351,
-          "mean": 168892351,
+          "median": 168893687,
+          "min": 168893687,
+          "max": 168893687,
+          "mean": 168893687,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 160155664,
-          "min": 160155664,
-          "max": 160155664,
-          "mean": 160155664,
+          "median": 160863796,
+          "min": 160863796,
+          "max": 160863796,
+          "mean": 160863796,
           "cv": 0
         }
       }
@@ -168,30 +168,30 @@
     {
       "tool": "ls:dir-2k",
       "metric": "valgrind-ir",
-      "officialCpu": 544637418,
-      "fastCpu": 303353928,
-      "officialSoftCpuUs": 8026,
-      "fastSoftCpuUs": 1299,
-      "officialWallMs": 8.088,
-      "fastWallMs": 0.994,
+      "officialCpu": 543450122,
+      "fastCpu": 303680440,
+      "officialSoftCpuUs": 10985,
+      "fastSoftCpuUs": 1286,
+      "officialWallMs": 31.924,
+      "fastWallMs": 1.233,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 544637418,
-          "min": 544637418,
-          "max": 544637418,
-          "mean": 544637418,
+          "median": 543450122,
+          "min": 543450122,
+          "max": 543450122,
+          "mean": 543450122,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 303353928,
-          "min": 303353928,
-          "max": 303353928,
-          "mean": 303353928,
+          "median": 303680440,
+          "min": 303680440,
+          "max": 303680440,
+          "mean": 303680440,
           "cv": 0
         }
       }
@@ -199,30 +199,30 @@
     {
       "tool": "find:dir-2k",
       "metric": "valgrind-ir",
-      "officialCpu": 473426124,
-      "fastCpu": 514464634,
-      "officialSoftCpuUs": 2827,
-      "fastSoftCpuUs": 3200,
-      "officialWallMs": 9.979,
-      "fastWallMs": 11.903,
+      "officialCpu": 471041755,
+      "fastCpu": 514987406,
+      "officialSoftCpuUs": 2296,
+      "fastSoftCpuUs": 2561,
+      "officialWallMs": 20.079,
+      "fastWallMs": 22.316,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 473426124,
-          "min": 473426124,
-          "max": 473426124,
-          "mean": 473426124,
+          "median": 471041755,
+          "min": 471041755,
+          "max": 471041755,
+          "mean": 471041755,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 514464634,
-          "min": 514464634,
-          "max": 514464634,
-          "mean": 514464634,
+          "median": 514987406,
+          "min": 514987406,
+          "max": 514987406,
+          "mean": 514987406,
           "cv": 0
         }
       }
@@ -230,30 +230,30 @@
     {
       "tool": "grep:large-2mb",
       "metric": "valgrind-ir",
-      "officialCpu": 2124245791,
-      "fastCpu": 2106767568,
-      "officialSoftCpuUs": 17489,
-      "fastSoftCpuUs": 16782,
-      "officialWallMs": 41.848,
-      "fastWallMs": 32.155,
+      "officialCpu": 2131127436,
+      "fastCpu": 1856603099,
+      "officialSoftCpuUs": 17866,
+      "fastSoftCpuUs": 12845,
+      "officialWallMs": 22.081,
+      "fastWallMs": 18.464,
       "officialRssKb": -1,
       "fastRssKb": -1,
       "binaryBytes": -1,
       "countStability": {
         "official": {
           "n": 1,
-          "median": 2124245791,
-          "min": 2124245791,
-          "max": 2124245791,
-          "mean": 2124245791,
+          "median": 2131127436,
+          "min": 2131127436,
+          "max": 2131127436,
+          "mean": 2131127436,
           "cv": 0
         },
         "fast": {
           "n": 1,
-          "median": 2106767568,
-          "min": 2106767568,
-          "max": 2106767568,
-          "mean": 2106767568,
+          "median": 1856603099,
+          "min": 1856603099,
+          "max": 1856603099,
+          "mean": 1856603099,
           "cv": 0
         }
       }
